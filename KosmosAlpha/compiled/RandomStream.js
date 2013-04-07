@@ -30,6 +30,11 @@
       return (max - min) * this.unit() + min;
     };
 
+    RandomStream.prototype.intRange = function(min, max) {
+      this.rand = ((this.rand + offset) * multiplier) % modulus;
+      return this.rand % (max + 1 - min) + min;
+    };
+
     return RandomStream;
 
   })();

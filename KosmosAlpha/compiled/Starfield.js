@@ -12,7 +12,7 @@
   root.Starfield = (function() {
 
     function Starfield(blockMinStars, blockMaxStars, blockScale, starSize, viewRange) {
-      var buff, i, j, k, pos, uv, w, x, y, z, _i, _j, _k, _l, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+      var buff, i, j, k, pos, rot, uv, w, x, y, z, _i, _j, _k, _l, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
       this.blockMinStars = blockMinStars;
       this.blockMaxStars = blockMaxStars;
       this.blockScale = blockScale;
@@ -21,7 +21,7 @@
       this.randomStream = new RandomStream(universeSeed);
       console.log("Generating stars...");
       this.shader = xgl.loadProgram("starfield");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "starSizeAndViewRange"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "starSizeAndViewRangeAndBlur"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aPos", "aUV"]);
       this.starPositions = [];
       for (i = _i = 0, _ref = starBufferSize - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
@@ -32,7 +32,7 @@
       j = 0;
       for (i = _j = 0, _ref1 = starBufferSize - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
         _ref2 = this.starPositions[i], x = _ref2[0], y = _ref2[1], z = _ref2[2], w = _ref2[3];
-        _ref3 = [[0, 0], [0, 1], [1, 0], [1, 1]];
+        _ref3 = [[0, 0], [1, 0], [1, 1], [0, 1]];
         for (_k = 0, _len = _ref3.length; _k < _len; _k++) {
           uv = _ref3[_k];
           buff[j] = x;
@@ -52,12 +52,13 @@
       buff = new Uint16Array(starBufferSize * 6);
       for (i = _l = 0, _ref4 = starBufferSize - 1; 0 <= _ref4 ? _l <= _ref4 : _l >= _ref4; i = 0 <= _ref4 ? ++_l : --_l) {
         _ref5 = [i * 6, i * 4], j = _ref5[0], k = _ref5[1];
-        buff[j] = k + 0;
-        buff[j + 1] = k + 1;
-        buff[j + 2] = k + 2;
-        buff[j + 3] = k + 1;
-        buff[j + 4] = k + 3;
-        buff[j + 5] = k + 2;
+        rot = this.randomStream.intRange(0, 3);
+        buff[j] = k + ((0 + rot) % 4);
+        buff[j + 1] = k + ((1 + rot) % 4);
+        buff[j + 2] = k + ((2 + rot) % 4);
+        buff[j + 3] = k + ((0 + rot) % 4);
+        buff[j + 4] = k + ((2 + rot) % 4);
+        buff[j + 5] = k + ((3 + rot) % 4);
       }
       this.iBuff = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuff);
@@ -70,9 +71,10 @@
       console.log("All stars generated.");
     }
 
-    Starfield.prototype.render = function(camera, gridOffset) {
+    Starfield.prototype.render = function(camera, gridOffset, blur) {
       var bpos, ci, cj, ck, i, j, k, minDist, r, rstr, seed, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       this._startRender();
+      this.blur = blur;
       _ref = [Math.floor(camera.position[0] / this.blockScale), Math.floor(camera.position[1] / this.blockScale), Math.floor(camera.position[2] / this.blockScale)], ci = _ref[0], cj = _ref[1], ck = _ref[2];
       r = Math.ceil(this.viewRange / this.blockScale);
       for (i = _i = _ref1 = ci - r, _ref2 = ci + r; _ref1 <= _ref2 ? _i <= _ref2 : _i >= _ref2; i = _ref1 <= _ref2 ? ++_i : --_i) {
@@ -144,7 +146,7 @@
       mat4.mul(modelViewMat, camera.viewMat, modelViewMat);
       gl.uniformMatrix4fv(this.shader.uniforms.projMat, false, camera.projMat);
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
-      gl.uniform2f(this.shader.uniforms.starSizeAndViewRange, this.starSize, this.viewRange);
+      gl.uniform3f(this.shader.uniforms.starSizeAndViewRangeAndBlur, this.starSize, this.viewRange, this.blur);
       return gl.drawElements(gl.TRIANGLES, starCount * 6, gl.UNSIGNED_SHORT, 2 * 6 * offset);
     };
 

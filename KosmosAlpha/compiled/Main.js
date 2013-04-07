@@ -61,7 +61,12 @@
     canvas.addEventListener("mouseup", mouseUp, false);
     canvas.addEventListener("mousemove", mouseMove, false);
     kosmosResize();
-    root.gl = WebGLUtils.setupWebGL(canvas);
+    root.gl = WebGLUtils.setupWebGL(canvas, void 0, function() {
+      return document.getElementById("glErrorMessage").style.display = "block";
+    });
+    if (!root.gl) {
+      return;
+    }
     camera = new Camera(canvas.width / canvas.height);
     starfield = new Starfield(200, 300, 1000.0, 5.0, 3000.0);
     camera.position = vec3.fromValues(0, 0, 0);
@@ -143,10 +148,16 @@
   };
 
   render = function() {
+    var blur;
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    starfield.render(camera, gridOffset);
+    blur = Math.abs(smoothSpeed) / 15000.0;
+    blur -= 0.001;
+    if (blur < 0) {
+      blur = 0;
+    }
+    starfield.render(camera, gridOffset, blur);
     return updateCoordinateSystem();
   };
 
