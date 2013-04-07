@@ -7,7 +7,7 @@
 
   root.Camera = (function() {
 
-    Camera.prototype.aspect = 1.0;
+    Camera.prototype.aspect = 1.6;
 
     Camera.prototype.near = 0.1;
 
@@ -27,8 +27,7 @@
 
     Camera.prototype.viewprojMat = mat4.create();
 
-    function Camera(aspectRatio) {
-      this.aspect = aspectRatio;
+    function Camera() {
       this.update();
     }
 

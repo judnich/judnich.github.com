@@ -70,8 +70,8 @@
     var rightPanel, x, y, _ref;
     _ref = [event.x, event.y], x = _ref[0], y = _ref[1];
     rightPanel = document.getElementById("rightbar");
-    x = (x - rightPanel.offsetLeft) / canvas.clientWidth;
-    y = (y - rightPanel.offsetTop) / canvas.clientHeight;
+    x = (x - rightPanel.offsetLeft - 1) / canvas.clientWidth;
+    y = (y - rightPanel.offsetTop - 1) / canvas.clientHeight;
     mouseX = (x - 0.5) * 2;
     mouseY = (y - 0.5) * 2;
     if (mouseIsDown) {
@@ -92,8 +92,9 @@
     if (!root.gl) {
       return;
     }
-    camera = new Camera(canvas.width / canvas.height);
     starfield = new Starfield(200, 300, 1000.0, 5.0, 3000.0);
+    camera = new Camera();
+    camera.aspect = canvas.width / canvas.height;
     camera.position = vec3.fromValues(0, 0, 0);
     camera.target = vec3.fromValues(0, 0, -1);
     camera.near = 0.001;
@@ -113,7 +114,11 @@
     devicePixelRatio = enableRetina ? window.devicePixelRatio || 1 : 1;
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
-    return console.log("Main framebuffer resolution " + canvas.width + " x " + canvas.height, "with device pixel ratio " + devicePixelRatio);
+    console.log("Main framebuffer resolution " + canvas.width + " x " + canvas.height, "with device pixel ratio " + devicePixelRatio);
+    if (camera) {
+      camera.aspect = canvas.width / canvas.height;
+      return resumeAnimating();
+    }
   };
 
   root.kosmosSetSpeed = function(speed) {
@@ -139,8 +144,8 @@
     if (!mouseIsDown) {
       return;
     }
-    pitch = mouseY * 50;
-    yaw = mouseX * 65;
+    pitch = mouseY * 40;
+    yaw = mouseX * 52;
     qPitch = quat.create();
     quat.setAxisAngle(qPitch, vec3.fromValues(-1, 0, 0), xgl.degToRad(pitch));
     qYaw = quat.create();
