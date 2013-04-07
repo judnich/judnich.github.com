@@ -34,4 +34,9 @@
 
   })();
 
+  root.randomFromSeed = function(number) {
+    number = ((number + offset) * multiplier) % modulus;
+    return number;
+  };
+
 }).call(this);

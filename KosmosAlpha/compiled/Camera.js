@@ -32,6 +32,15 @@
       this.update();
     }
 
+    Camera.prototype.setRotation = function(quat) {
+      var lookVec;
+      lookVec = vec3.fromValues(0, 0, -1);
+      vec3.transformQuat(lookVec, lookVec, quat);
+      vec3.add(this.target, this.position, lookVec);
+      this.up = vec3.fromValues(0, 1, 0);
+      return vec3.transformQuat(this.up, this.up, quat);
+    };
+
     Camera.prototype.update = function() {
       mat4.perspective(this.projMat, this.fov, this.aspect, this.near, this.far);
       mat4.lookAt(this.viewMat, this.position, this.target, this.up);

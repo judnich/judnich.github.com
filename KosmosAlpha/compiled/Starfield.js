@@ -81,7 +81,7 @@
             bpos = vec3.fromValues((i + 0.5) * this.blockScale, (j + 0.5) * this.blockScale, (k + 0.5) * this.blockScale);
             minDist = vec3.distance(camera.position, bpos) - this.blockScale * 0.8660254;
             if (minDist <= this.viewRange) {
-              seed = ((i + gridOffset[0]) * 7) + ((j + gridOffset[1]) * 65537) + ((k + gridOffset[2]) * 257);
+              seed = randomFromSeed(randomFromSeed(randomFromSeed(i + gridOffset[0]) + (j + gridOffset[1])) + (k + gridOffset[2]));
               rstr = new root.RandomStream(seed);
               this._renderBlock(camera, seed, rstr.range(this.blockMinStars, this.blockMaxStars), i, j, k);
             }

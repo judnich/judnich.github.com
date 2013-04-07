@@ -1,5 +1,8 @@
+// NOTE: Needs major cleanup, decouple events from html, change to coffeescript
+// This file is meant to cover all UI stuff and abstract that away from the main 
+// simulation/game code found in Main.coffee
 
-_speed = 0.0;
+_speed = 0.65;
 _reverseMode = false;
 _sliderMouseDown = false;
 
@@ -73,6 +76,11 @@ function jsMain() {
 		if (event.keyCode == 27) { // escape
 			killSimulation();
 		}
+		if (event.keyCode == 32) { // space
+			_reverseMode = !_reverseMode;
+			updateButtons();
+		}
+
 		updateSpeed();
 	}
 }
