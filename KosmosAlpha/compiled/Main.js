@@ -136,7 +136,7 @@
       elapsed = 0.0;
     }
     lastTime = timeNow;
-    return deltaTime = elapsed * 0.5 + deltaTime * 0.5;
+    return deltaTime = elapsed * 0.1 + deltaTime * 0.9;
   };
 
   updateMouse = function() {
