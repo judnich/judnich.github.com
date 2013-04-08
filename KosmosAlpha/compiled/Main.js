@@ -136,7 +136,7 @@
       elapsed = 0.0;
     }
     lastTime = timeNow;
-    return deltaTime = elapsed * 0.1 + deltaTime * 0.9;
+    return deltaTime = elapsed * 0.5 + deltaTime * 0.5;
   };
 
   updateMouse = function() {
@@ -156,17 +156,13 @@
   };
 
   tick = function() {
-    var moveVec, rotationAccel;
-    if (animating) {
-      window.requestAnimFrame(tick);
-    }
+    var moveVec;
     updateTickElapsed();
     updateMouse();
     smoothSpeed = smoothSpeed * 0.90 + 0.10 * desiredSpeed;
     moveVec = vec3.fromValues(0, 0, -smoothSpeed * deltaTime);
     vec3.transformQuat(moveVec, moveVec, smoothRotation);
     vec3.add(camera.position, camera.position, moveVec);
-    rotationAccel = rotationAccel * 0.95 + 0.05;
     quat.slerp(smoothRotation, smoothRotation, desiredRotation, 0.05);
     camera.setRotation(smoothRotation);
     camera.update();
@@ -177,7 +173,10 @@
       lastFrameTime = timeNow;
       fps = 0;
     }
-    return sleepIfIdle();
+    sleepIfIdle();
+    if (animating) {
+      return window.requestAnimFrame(tick);
+    }
   };
 
   sleepIfIdle = function() {
