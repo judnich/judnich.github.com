@@ -213,6 +213,9 @@
     if (blur > 2.0) {
       blur = 2.0;
     }
+    if (smoothSpeed < 0) {
+      blur = -blur;
+    }
     starfield.render(camera, gridOffset, blur);
     return updateCoordinateSystem();
   };
