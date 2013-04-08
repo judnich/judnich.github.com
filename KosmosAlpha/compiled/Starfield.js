@@ -12,7 +12,7 @@
   root.Starfield = (function() {
 
     function Starfield(blockMinStars, blockMaxStars, blockScale, starSize, viewRange) {
-      var buff, i, j, k, pos, rot, uv, w, x, y, z, _i, _j, _k, _l, _len, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+      var angle, buff, i, j, k, marker, pos, randAngle, u, v, vi, w, x, y, z, _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _ref4;
       this.blockMinStars = blockMinStars;
       this.blockMaxStars = blockMaxStars;
       this.blockScale = blockScale;
@@ -28,37 +28,40 @@
         pos = [this.randomStream.unit(), this.randomStream.unit(), this.randomStream.unit(), this.randomStream.unit()];
         this.starPositions[i] = pos;
       }
-      buff = new Float32Array(starBufferSize * 4 * 6);
+      buff = new Float32Array(starBufferSize * 4 * 7);
       j = 0;
       for (i = _j = 0, _ref1 = starBufferSize - 1; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
         _ref2 = this.starPositions[i], x = _ref2[0], y = _ref2[1], z = _ref2[2], w = _ref2[3];
-        _ref3 = [[0, 0], [1, 0], [1, 1], [0, 1]];
-        for (_k = 0, _len = _ref3.length; _k < _len; _k++) {
-          uv = _ref3[_k];
+        randAngle = this.randomStream.range(0, Math.PI * 2);
+        for (vi = _k = 0; _k <= 3; vi = ++_k) {
+          angle = ((vi - 0.5) / 2.0) * Math.PI + randAngle;
+          u = Math.sin(angle) * Math.sqrt(2) * 0.5;
+          v = Math.cos(angle) * Math.sqrt(2) * 0.5;
+          marker = vi <= 1 ? 1 : -1;
           buff[j] = x;
           buff[j + 1] = y;
           buff[j + 2] = z;
           buff[j + 3] = w;
-          buff[j + 4] = uv[0];
-          buff[j + 5] = uv[1];
-          j += 6;
+          buff[j + 4] = u;
+          buff[j + 5] = v;
+          buff[j + 6] = marker;
+          j += 7;
         }
       }
       this.vBuff = gl.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vBuff);
       gl.bufferData(gl.ARRAY_BUFFER, buff, gl.STATIC_DRAW);
-      this.vBuff.itemSize = 6;
+      this.vBuff.itemSize = 7;
       this.vBuff.numItems = starBufferSize * 4;
       buff = new Uint16Array(starBufferSize * 6);
-      for (i = _l = 0, _ref4 = starBufferSize - 1; 0 <= _ref4 ? _l <= _ref4 : _l >= _ref4; i = 0 <= _ref4 ? ++_l : --_l) {
-        _ref5 = [i * 6, i * 4], j = _ref5[0], k = _ref5[1];
-        rot = this.randomStream.intRange(0, 3);
-        buff[j] = k + ((0 + rot) % 4);
-        buff[j + 1] = k + ((1 + rot) % 4);
-        buff[j + 2] = k + ((2 + rot) % 4);
-        buff[j + 3] = k + ((0 + rot) % 4);
-        buff[j + 4] = k + ((2 + rot) % 4);
-        buff[j + 5] = k + ((3 + rot) % 4);
+      for (i = _l = 0, _ref3 = starBufferSize - 1; 0 <= _ref3 ? _l <= _ref3 : _l >= _ref3; i = 0 <= _ref3 ? ++_l : --_l) {
+        _ref4 = [i * 6, i * 4], j = _ref4[0], k = _ref4[1];
+        buff[j] = k + 0;
+        buff[j + 1] = k + 1;
+        buff[j + 2] = k + 2;
+        buff[j + 3] = k + 0;
+        buff[j + 4] = k + 2;
+        buff[j + 5] = k + 3;
       }
       this.iBuff = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuff);
@@ -95,6 +98,7 @@
 
     Starfield.prototype._startRender = function() {
       gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
       gl.depthMask(false);
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE);
@@ -103,7 +107,7 @@
       gl.enableVertexAttribArray(this.shader.attribs.aPos);
       gl.vertexAttribPointer(this.shader.attribs.aPos, 4, gl.FLOAT, false, this.vBuff.itemSize * 4, 0);
       gl.enableVertexAttribArray(this.shader.attribs.aUV);
-      gl.vertexAttribPointer(this.shader.attribs.aUV, 2, gl.FLOAT, false, this.vBuff.itemSize * 4, 4 * 4);
+      gl.vertexAttribPointer(this.shader.attribs.aUV, 3, gl.FLOAT, false, this.vBuff.itemSize * 4, 4 * 4);
       return gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.iBuff);
     };
 
@@ -113,6 +117,7 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
       gl.useProgram(null);
+      gl.enable(gl.CULL_FACE);
       gl.enable(gl.DEPTH_TEST);
       gl.depthMask(true);
       return gl.disable(gl.BLEND);

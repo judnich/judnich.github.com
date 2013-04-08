@@ -205,13 +205,13 @@
     gl.viewport(0, 0, canvas.width, canvas.height);
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    blur = Math.abs(smoothSpeed) / 15000.0;
+    blur = Math.abs(smoothSpeed) / 20000.0;
     blur -= 0.001;
     if (blur < 0) {
       blur = 0;
     }
-    if (blur > 1.5) {
-      blur = 1.5;
+    if (blur > 2.0) {
+      blur = 2.0;
     }
     starfield.render(camera, gridOffset, blur);
     return updateCoordinateSystem();
