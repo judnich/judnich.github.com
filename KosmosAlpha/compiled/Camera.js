@@ -33,10 +33,10 @@
 
     Camera.prototype.setRotation = function(quat) {
       var lookVec;
-      lookVec = vec3.fromValues(0, 0, -1);
+      lookVec = vec3.fromValues(0, 0, -1000);
       vec3.transformQuat(lookVec, lookVec, quat);
       vec3.add(this.target, this.position, lookVec);
-      this.up = vec3.fromValues(0, 1, 0);
+      this.up = vec3.fromValues(0, 1000, 0);
       return vec3.transformQuat(this.up, this.up, quat);
     };
 

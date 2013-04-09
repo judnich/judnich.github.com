@@ -14,12 +14,15 @@
   root.RandomStream = (function() {
 
     function RandomStream(seed) {
-      this.rand = seed % modulus;
+      if (seed == null) {
+        seed = 0;
+      }
+      this.seed = seed % modulus;
     }
 
     RandomStream.prototype.unit = function() {
-      this.rand = ((this.rand + offset) * multiplier) % modulus;
-      return this.rand / modulus;
+      this.seed = ((this.seed + offset) * multiplier) % modulus;
+      return this.seed / modulus;
     };
 
     RandomStream.prototype.symmetric = function() {
@@ -31,15 +34,15 @@
     };
 
     RandomStream.prototype.intRange = function(min, max) {
-      this.rand = ((this.rand + offset) * multiplier) % modulus;
-      return this.rand % (max + 1 - min) + min;
+      this.seed = ((this.seed + offset) * multiplier) % modulus;
+      return this.seed % (max + 1 - min) + min;
     };
 
     return RandomStream;
 
   })();
 
-  root.randomFromSeed = function(number) {
+  root.randomIntFromSeed = function(number) {
     number = ((number + offset) * multiplier) % modulus;
     return number;
   };
