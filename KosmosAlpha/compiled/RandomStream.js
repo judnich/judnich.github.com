@@ -25,6 +25,11 @@
       return this.seed / modulus;
     };
 
+    RandomStream.prototype.intRange = function(min, max) {
+      this.seed = ((this.seed + offset) * multiplier) % modulus;
+      return this.seed % (max + 1 - min) + min;
+    };
+
     RandomStream.prototype.symmetric = function() {
       return this.unit() * 2.0 - 1.0;
     };
@@ -33,9 +38,8 @@
       return (max - min) * this.unit() + min;
     };
 
-    RandomStream.prototype.intRange = function(min, max) {
-      this.seed = ((this.seed + offset) * multiplier) % modulus;
-      return this.seed % (max + 1 - min) + min;
+    RandomStream.prototype.radianAngle = function() {
+      return this.range(0, 2.0 * Math.PI);
     };
 
     return RandomStream;

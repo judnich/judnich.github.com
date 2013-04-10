@@ -5,7 +5,7 @@
 
   root = typeof exports !== "undefined" && exports !== null ? exports : this;
 
-  root.planetBufferSize = 10;
+  root.planetBufferSize = 100;
 
   root.Planetfield = (function() {
 
@@ -18,6 +18,7 @@
       this.planetSize = planetSize;
       this.starfield = starfield;
       this._planetBufferSize = planetBufferSize;
+      this.maxPlanetsPerSystem = 3;
       randomStream = new RandomStream(universeSeed);
       this.shader = xgl.loadProgram("planetfield");
       this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "spriteSizeAndViewRangeAndBlur"]);
@@ -49,10 +50,6 @@
 
     Planetfield.prototype.setPlanetSprite = function(index, position) {
       var j, vi, _i, _results;
-      if (index >= this._planetBufferSize) {
-        console.log("Internal error: Planet index exceeds planet buffer size");
-        return;
-      }
       j = index * 6 * 4;
       _results = [];
       for (vi = _i = 0; _i <= 3; vi = ++_i) {
@@ -64,14 +61,45 @@
       return _results;
     };
 
-    Planetfield.prototype.render = function(camera, originOffset, blur) {
-      var i, numPlanets, randomStream, seed, _i, _ref;
-      numPlanets = 10;
-      randomStream = new RandomStream(0);
-      for (i = _i = 0, _ref = numPlanets - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        this.setPlanetSprite(i, [randomStream.range(-1000, 1000) - originOffset[0], randomStream.range(-1000, 1000) - originOffset[1], randomStream.range(-1000, 1000) - originOffset[2]]);
+    Planetfield.prototype.updatePlanetSprites = function(position, originOffset) {
+      var angle, dx, dy, dz, i, orbitX, orbitY, orbitZ, radius, randomStream, starList, systemPlanets, w, _i, _len, _ref, _results;
+      starList = this.starfield.queryStars(position, originOffset, this.farRange);
+      starList.sort(function(_arg, _arg1) {
+        var aw, ax, ay, az, cw, cx, cy, cz;
+        ax = _arg[0], ay = _arg[1], az = _arg[2], aw = _arg[3];
+        cx = _arg1[0], cy = _arg1[1], cz = _arg1[2], cw = _arg1[3];
+        return (ax * ax + ay * ay + az * az) - (cx * cx + cy * cy + cz * cz);
+      });
+      randomStream = new RandomStream();
+      this.numPlanets = 0;
+      _results = [];
+      for (_i = 0, _len = starList.length; _i < _len; _i++) {
+        _ref = starList[_i], dx = _ref[0], dy = _ref[1], dz = _ref[2], w = _ref[3];
+        randomStream.seed = w * 1000000;
+        systemPlanets = randomStream.intRange(0, this.maxPlanetsPerSystem);
+        if (this.numPlanets + systemPlanets > this._planetBufferSize) {
+          break;
+        }
+        _results.push((function() {
+          var _j, _ref1, _results1;
+          _results1 = [];
+          for (i = _j = 1; 1 <= systemPlanets ? _j <= systemPlanets : _j >= systemPlanets; i = 1 <= systemPlanets ? ++_j : --_j) {
+            radius = this.starfield.starSize * randomStream.range(1.5, 3.0);
+            angle = randomStream.radianAngle();
+            _ref1 = [radius * Math.sin(angle), radius * Math.cos(angle), w * Math.sin(angle)], orbitX = _ref1[0], orbitY = _ref1[1], orbitZ = _ref1[2];
+            this.setPlanetSprite(this.numPlanets, [dx + orbitX + position[0], dy + orbitY + position[1], dz + orbitZ + position[2]]);
+            _results1.push(this.numPlanets++);
+          }
+          return _results1;
+        }).call(this));
       }
-      if (numPlanets <= 0) {
+      return _results;
+    };
+
+    Planetfield.prototype.render = function(camera, originOffset, blur) {
+      var seed;
+      this.updatePlanetSprites(camera.position, originOffset);
+      if (this.numPlanets <= 0) {
         return;
       }
       this._startRender();
@@ -84,7 +112,7 @@
       gl.uniformMatrix4fv(this.shader.uniforms.projMat, false, camera.projMat);
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, camera.viewMat);
       gl.uniform4f(this.shader.uniforms.spriteSizeAndViewRangeAndBlur, this.planetSize, this.nearRange, this.farRange, blur);
-      gl.drawElements(gl.TRIANGLES, numPlanets * 6, gl.UNSIGNED_SHORT, 0);
+      gl.drawElements(gl.TRIANGLES, this.numPlanets * 6, gl.UNSIGNED_SHORT, 0);
       return this._finishRender();
     };
 

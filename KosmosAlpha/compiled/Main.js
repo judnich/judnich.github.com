@@ -160,8 +160,8 @@
     if (!mouseIsDown) {
       return;
     }
-    pitch = mouseY * 40;
-    yaw = mouseX * 52;
+    pitch = mouseY * 45;
+    yaw = mouseX * 58;
     qPitch = quat.create();
     quat.setAxisAngle(qPitch, vec3.fromValues(-1, 0, 0), xgl.degToRad(pitch));
     qYaw = quat.create();
@@ -278,6 +278,7 @@
     camera.near = starfield.viewRange / 50000.0;
     camera.update();
     starfield.render(camera, originOffset, blur);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
     camera.far = planetfield.farRange * 1.1;
     camera.near = planetfield.nearRange * 0.9;
     camera.update();
