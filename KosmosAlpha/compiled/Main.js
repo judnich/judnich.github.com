@@ -98,13 +98,16 @@
       blockMinStars: 200,
       blockMaxStars: 300,
       blockScale: 100000.0,
-      starSize: 500.0,
+      starSize: 50.0,
       viewRange: 300000.0
     });
     planetfield = new Planetfield({
       starfield: starfield,
-      planetSize: 5.0,
-      nearRange: 50.0,
+      maxPlanetsPerSystem: 3,
+      minOrbitScale: 15,
+      maxOrbitScale: 30,
+      planetSize: 1.0,
+      nearRange: 100.0,
       farRange: 30000.0
     });
     camera = new Camera();
@@ -300,14 +303,7 @@
     if (smoothSpeed < 0) {
       blur = -blur;
     }
-    camera.far = starfield.viewRange * 1.1;
-    camera.near = starfield.viewRange / 50000.0;
-    camera.update();
     starfield.render(camera, originOffset, blur);
-    gl.clear(gl.DEPTH_BUFFER_BIT);
-    camera.far = planetfield.farRange * 1.1;
-    camera.near = planetfield.nearRange * 0.9;
-    camera.update();
     planetfield.render(camera, originOffset, blur);
     return updateCoordinateSystem();
   };

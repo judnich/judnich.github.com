@@ -14,12 +14,12 @@
     function Starfield(_arg) {
       var angle, blockMaxStars, blockMinStars, blockScale, buff, i, j, k, marker, pos, randAngle, randomStream, starPositions, starSize, u, v, vi, viewRange, w, x, y, z, _i, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _ref4;
       blockMinStars = _arg.blockMinStars, blockMaxStars = _arg.blockMaxStars, blockScale = _arg.blockScale, starSize = _arg.starSize, viewRange = _arg.viewRange;
+      this._starBufferSize = root.starBufferSize;
       this.blockMinStars = blockMinStars;
       this.blockMaxStars = blockMaxStars;
       this.blockScale = blockScale;
       this.viewRange = viewRange;
       this.starSize = starSize;
-      this._starBufferSize = root.starBufferSize;
       randomStream = new RandomStream(universeSeed);
       console.log("Generating star data...");
       this.shader = xgl.loadProgram("starfield");
@@ -165,6 +165,9 @@
 
     Starfield.prototype.render = function(camera, originOffset, blur) {
       var bpos, ci, cj, ck, i, j, k, li, lj, lk, minDist, r, randStream, seed, x, y, z, _i, _j, _k, _ref, _ref1, _ref2;
+      camera.far = this.viewRange * 1.1;
+      camera.near = this.viewRange / 50000.0;
+      camera.update();
       this._startRender();
       this.blur = blur;
       _ref = [Math.floor(camera.position[0] / this.blockScale + originOffset[0] / this.blockScale), Math.floor(camera.position[1] / this.blockScale + originOffset[1] / this.blockScale), Math.floor(camera.position[2] / this.blockScale + originOffset[2] / this.blockScale)], ci = _ref[0], cj = _ref[1], ck = _ref[2];
@@ -249,7 +252,7 @@
       mat4.mul(modelViewMat, camera.viewMat, modelViewMat);
       gl.uniformMatrix4fv(this.shader.uniforms.projMat, false, camera.projMat);
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
-      gl.uniform3f(this.shader.uniforms.starSizeAndViewRangeAndBlur, this.starSize, this.viewRange, this.blur);
+      gl.uniform3f(this.shader.uniforms.starSizeAndViewRangeAndBlur, this.starSize * 10.0, this.viewRange, this.blur);
       return gl.drawElements(gl.TRIANGLES, starCount * 6, gl.UNSIGNED_SHORT, 2 * 6 * offset);
     };
 

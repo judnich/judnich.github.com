@@ -10,20 +10,21 @@
   root.Planetfield = (function() {
 
     function Planetfield(_arg) {
-      var angle, farRange, i, j, marker, nearRange, planetSize, randAngle, randomStream, starfield, u, v, vi, _i, _j, _ref;
-      starfield = _arg.starfield, planetSize = _arg.planetSize, nearRange = _arg.nearRange, farRange = _arg.farRange;
-      this.starfield = starfield;
+      var angle, farRange, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearRange, planetSize, randAngle, randomStream, starfield, u, v, vi, _i, _j, _ref;
+      starfield = _arg.starfield, maxPlanetsPerSystem = _arg.maxPlanetsPerSystem, minOrbitScale = _arg.minOrbitScale, maxOrbitScale = _arg.maxOrbitScale, planetSize = _arg.planetSize, nearRange = _arg.nearRange, farRange = _arg.farRange;
+      this._starfield = starfield;
+      this._planetBufferSize = root.planetBufferSize;
       this.nearRange = nearRange;
       this.farRange = farRange;
       this.planetSize = planetSize;
-      this.starfield = starfield;
-      this._planetBufferSize = planetBufferSize;
-      this.maxPlanetsPerSystem = 3;
+      this.maxPlanetsPerSystem = maxPlanetsPerSystem;
+      this.minOrbitScale = minOrbitScale;
+      this.maxOrbitScale = maxOrbitScale;
       randomStream = new RandomStream(universeSeed);
       this.shader = xgl.loadProgram("planetfield");
       this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "spriteSizeAndViewRangeAndBlur"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aPos", "aUV"]);
-      this.iBuff = this.starfield.iBuff;
+      this.iBuff = this._starfield.iBuff;
       if (this._planetBufferSize * 6 > this.iBuff.numItems) {
         console.log("Warning: planetBufferSize should not be larger than starBufferSize. Setting planetBufferSize = starBufferSize.");
         this._planetBufferSize = this.iBuff.numItems;
@@ -46,6 +47,7 @@
       this.vBuff = gl.createBuffer();
       this.vBuff.itemSize = 6;
       this.vBuff.numItems = this._planetBufferSize * 4;
+      this.farMesh = new PlanetFarMesh(8);
     }
 
     Planetfield.prototype.setPlanetSprite = function(index, position) {
@@ -61,33 +63,54 @@
       return _results;
     };
 
-    Planetfield.prototype.updatePlanetSprites = function(position, originOffset) {
-      var angle, dx, dy, dz, i, orbitX, orbitY, orbitZ, radius, randomStream, starList, systemPlanets, w, _i, _len, _ref, _results;
-      starList = this.starfield.queryStars(position, originOffset, this.farRange);
-      starList.sort(function(_arg, _arg1) {
+    Planetfield.prototype.render = function(camera, originOffset, blur) {
+      this.starList = this._starfield.queryStars(camera.position, originOffset, this.farRange);
+      this.starList.sort(function(_arg, _arg1) {
         var aw, ax, ay, az, cw, cx, cy, cz;
         ax = _arg[0], ay = _arg[1], az = _arg[2], aw = _arg[3];
         cx = _arg1[0], cy = _arg1[1], cz = _arg1[2], cw = _arg1[3];
         return (ax * ax + ay * ay + az * az) - (cx * cx + cy * cy + cz * cz);
       });
+      this.generatePlanetPositions();
+      camera.far = this.farRange * 1.1;
+      camera.near = this.nearRange * 0.9;
+      camera.update();
+      this.renderSprites(camera, originOffset, blur);
+      camera.far = this.nearRange * 5.0;
+      camera.near = this.nearRange * 0.001;
+      camera.update();
+      return this.renderFarMeshes(camera, originOffset);
+    };
+
+    Planetfield.prototype.generatePlanetPositions = function() {
+      var alpha, angle, dist, dx, dy, dz, i, numMeshPlanets, radius, randomStream, systemPlanets, w, x, y, z, _i, _len, _ref, _ref1, _results;
       randomStream = new RandomStream();
       this.numPlanets = 0;
+      this.meshPlanets = [];
+      numMeshPlanets = 0;
+      _ref = this.starList;
       _results = [];
-      for (_i = 0, _len = starList.length; _i < _len; _i++) {
-        _ref = starList[_i], dx = _ref[0], dy = _ref[1], dz = _ref[2], w = _ref[3];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        _ref1 = _ref[_i], dx = _ref1[0], dy = _ref1[1], dz = _ref1[2], w = _ref1[3];
         randomStream.seed = w * 1000000;
         systemPlanets = randomStream.intRange(0, this.maxPlanetsPerSystem);
         if (this.numPlanets + systemPlanets > this._planetBufferSize) {
           break;
         }
         _results.push((function() {
-          var _j, _ref1, _results1;
+          var _j, _ref2, _results1;
           _results1 = [];
           for (i = _j = 1; 1 <= systemPlanets ? _j <= systemPlanets : _j >= systemPlanets; i = 1 <= systemPlanets ? ++_j : --_j) {
-            radius = this.starfield.starSize * randomStream.range(1.5, 3.0);
+            radius = this._starfield.starSize * randomStream.range(this.minOrbitScale, this.maxOrbitScale);
             angle = randomStream.radianAngle();
-            _ref1 = [radius * Math.sin(angle), radius * Math.cos(angle), w * Math.sin(angle)], orbitX = _ref1[0], orbitY = _ref1[1], orbitZ = _ref1[2];
-            this.setPlanetSprite(this.numPlanets, [dx + orbitX + position[0], dy + orbitY + position[1], dz + orbitZ + position[2]]);
+            _ref2 = [dx + radius * Math.sin(angle), dy + radius * Math.cos(angle), dz + w * Math.sin(angle)], x = _ref2[0], y = _ref2[1], z = _ref2[2];
+            dist = Math.sqrt(x * x + y * y + z * z);
+            alpha = 2.0 - (dist / this.nearRange) * 0.5;
+            if (alpha > 0.001) {
+              this.meshPlanets[numMeshPlanets] = [x, y, z, alpha];
+              numMeshPlanets++;
+            }
+            this.setPlanetSprite(this.numPlanets, [x, y, z]);
             _results1.push(this.numPlanets++);
           }
           return _results1;
@@ -96,27 +119,46 @@
       return _results;
     };
 
-    Planetfield.prototype.render = function(camera, originOffset, blur) {
-      var seed;
-      this.updatePlanetSprites(camera.position, originOffset);
+    Planetfield.prototype.renderFarMeshes = function(camera, originOffset) {
+      var alpha, i, lightVec, lw, lx, ly, lz, pos, x, y, z, _i, _ref, _ref1, _ref2;
+      if (!this.meshPlanets || this.meshPlanets.length === 0 || this.starList.length === 0) {
+        return;
+      }
+      this.farMesh.startRender();
+      _ref = this.starList[0], lx = _ref[0], ly = _ref[1], lz = _ref[2], lw = _ref[3];
+      for (i = _i = _ref1 = this.meshPlanets.length - 1; _ref1 <= 0 ? _i <= 0 : _i >= 0; i = _ref1 <= 0 ? ++_i : --_i) {
+        _ref2 = this.meshPlanets[i], x = _ref2[0], y = _ref2[1], z = _ref2[2], alpha = _ref2[3];
+        pos = vec3.fromValues(x + camera.position[0], y + camera.position[1], z + camera.position[2]);
+        lightVec = vec3.fromValues(lx - x, ly - y, lz - z);
+        vec3.normalize(lightVec, lightVec);
+        this.farMesh.renderInstance(camera, pos, lightVec, alpha);
+      }
+      return this.farMesh.finishRender();
+    };
+
+    Planetfield.prototype.renderSprites = function(camera, originOffset, blur) {
+      var modelViewMat, seed;
       if (this.numPlanets <= 0) {
         return;
       }
-      this._startRender();
+      this._startRenderSprites();
       gl.bufferData(gl.ARRAY_BUFFER, this.buff, gl.DYNAMIC_DRAW);
       this.vBuff.usedItems = Math.floor(this.vBuff.usedItems);
       if (this.vBuff.usedItems <= 0) {
         return;
       }
       seed = Math.floor(Math.abs(seed));
+      modelViewMat = mat4.create();
+      mat4.translate(modelViewMat, modelViewMat, camera.position);
+      mat4.mul(modelViewMat, camera.viewMat, modelViewMat);
       gl.uniformMatrix4fv(this.shader.uniforms.projMat, false, camera.projMat);
-      gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, camera.viewMat);
-      gl.uniform4f(this.shader.uniforms.spriteSizeAndViewRangeAndBlur, this.planetSize, this.nearRange, this.farRange, blur);
+      gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
+      gl.uniform4f(this.shader.uniforms.spriteSizeAndViewRangeAndBlur, this.planetSize * 10.0, this.nearRange, this.farRange, blur);
       gl.drawElements(gl.TRIANGLES, this.numPlanets * 6, gl.UNSIGNED_SHORT, 0);
-      return this._finishRender();
+      return this._finishRenderSprites();
     };
 
-    Planetfield.prototype._startRender = function() {
+    Planetfield.prototype._startRenderSprites = function() {
       gl.disable(gl.DEPTH_TEST);
       gl.disable(gl.CULL_FACE);
       gl.depthMask(false);
@@ -131,7 +173,7 @@
       return gl.vertexAttribPointer(this.shader.attribs.aUV, 3, gl.FLOAT, false, this.vBuff.itemSize * 4, 4 * 3);
     };
 
-    Planetfield.prototype._finishRender = function() {
+    Planetfield.prototype._finishRenderSprites = function() {
       gl.disableVertexAttribArray(this.shader.attribs.aPos);
       gl.disableVertexAttribArray(this.shader.attribs.aUV);
       gl.bindBuffer(gl.ARRAY_BUFFER, null);

@@ -61,6 +61,10 @@
   xgl.loadProgram = function(programName) {
     var fragmentShader, prog, shaderSrc, vertexShader;
     shaderSrc = xgl.programs[programName];
+    if (!shaderSrc) {
+      xgl.error("Sources for program \"" + programName + "\" not found in xgl.programs.");
+      return null;
+    }
     vertexShader = xgl.loadShader(shaderSrc.vertex, true);
     if (vertexShader === null) {
       xgl.error("Error loading vertex shader for \"" + programName + "\"");
