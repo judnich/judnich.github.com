@@ -113,6 +113,7 @@
     camera = new Camera();
     camera.aspect = canvas.width / canvas.height;
     camera.position = vec3.fromValues(0, 0, 0);
+    camera.fov = xgl.degToRad(90);
     loadLocation();
     return resumeAnimating();
   };

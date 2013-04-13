@@ -10,7 +10,7 @@
   root.Planetfield = (function() {
 
     function Planetfield(_arg) {
-      var angle, farRange, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearRange, planetSize, randAngle, randomStream, starfield, u, v, vi, _i, _j, _ref;
+      var angle, farRange, generateCallback, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearRange, planetSize, randAngle, randomStream, starfield, u, v, vi, _i, _j, _ref;
       starfield = _arg.starfield, maxPlanetsPerSystem = _arg.maxPlanetsPerSystem, minOrbitScale = _arg.minOrbitScale, maxOrbitScale = _arg.maxOrbitScale, planetSize = _arg.planetSize, nearRange = _arg.nearRange, farRange = _arg.farRange;
       this._starfield = starfield;
       this._planetBufferSize = root.planetBufferSize;
@@ -48,6 +48,13 @@
       this.vBuff.itemSize = 6;
       this.vBuff.numItems = this._planetBufferSize * 4;
       this.farMesh = new PlanetFarMesh(8);
+      this.farMapGen = new FarMapGenerator(512);
+      generateCallback = (function(gen) {
+        return function(seed) {
+          return gen.generate(seed);
+        };
+      })(this.farMapGen);
+      this.farMapCache = new ContentCache(16, generateCallback);
     }
 
     Planetfield.prototype.setPlanetSprite = function(index, position) {
@@ -79,11 +86,14 @@
       camera.far = this.nearRange * 5.0;
       camera.near = this.nearRange * 0.001;
       camera.update();
-      return this.renderFarMeshes(camera, originOffset);
+      this.renderFarMeshes(camera, originOffset);
+      this.farMapGen.start();
+      this.farMapCache.update(1);
+      return this.farMapGen.finish();
     };
 
     Planetfield.prototype.generatePlanetPositions = function() {
-      var alpha, angle, dist, dx, dy, dz, i, numMeshPlanets, radius, randomStream, systemPlanets, w, x, y, z, _i, _len, _ref, _ref1, _results;
+      var alpha, angle, dist, dx, dy, dz, i, numMeshPlanets, pw, radius, randomStream, systemPlanets, w, x, y, z, _i, _len, _ref, _ref1, _results;
       randomStream = new RandomStream();
       this.numPlanets = 0;
       this.meshPlanets = [];
@@ -92,7 +102,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         _ref1 = _ref[_i], dx = _ref1[0], dy = _ref1[1], dz = _ref1[2], w = _ref1[3];
-        randomStream.seed = w * 1000000;
+        randomStream.seed = Math.floor(w * 1000000);
         systemPlanets = randomStream.intRange(0, this.maxPlanetsPerSystem);
         if (this.numPlanets + systemPlanets > this._planetBufferSize) {
           break;
@@ -106,8 +116,9 @@
             _ref2 = [dx + radius * Math.sin(angle), dy + radius * Math.cos(angle), dz + w * Math.sin(angle)], x = _ref2[0], y = _ref2[1], z = _ref2[2];
             dist = Math.sqrt(x * x + y * y + z * z);
             alpha = 2.0 - (dist / this.nearRange) * 0.5;
+            pw = randomStream.unit();
             if (alpha > 0.001) {
-              this.meshPlanets[numMeshPlanets] = [x, y, z, alpha];
+              this.meshPlanets[numMeshPlanets] = [x, y, z, pw, alpha];
               numMeshPlanets++;
             }
             this.setPlanetSprite(this.numPlanets, [x, y, z]);
@@ -120,18 +131,31 @@
     };
 
     Planetfield.prototype.renderFarMeshes = function(camera, originOffset) {
-      var alpha, i, lightVec, lw, lx, ly, lz, pos, x, y, z, _i, _ref, _ref1, _ref2;
+      var alpha, globalPos, i, lightCenter, lightPos, lightVec, localPos, seed, star, textureMap, w, x, y, z, _i, _j, _ref, _ref1, _ref2, _ref3;
       if (!this.meshPlanets || this.meshPlanets.length === 0 || this.starList.length === 0) {
         return;
       }
       this.farMesh.startRender();
-      _ref = this.starList[0], lx = _ref[0], ly = _ref[1], lz = _ref[2], lw = _ref[3];
-      for (i = _i = _ref1 = this.meshPlanets.length - 1; _ref1 <= 0 ? _i <= 0 : _i >= 0; i = _ref1 <= 0 ? ++_i : --_i) {
-        _ref2 = this.meshPlanets[i], x = _ref2[0], y = _ref2[1], z = _ref2[2], alpha = _ref2[3];
-        pos = vec3.fromValues(x + camera.position[0], y + camera.position[1], z + camera.position[2]);
-        lightVec = vec3.fromValues(lx - x, ly - y, lz - z);
+      lightCenter = vec3.fromValues(this.starList[0][0], this.starList[0][1], this.starList[0][2]);
+      for (i = _i = 1, _ref = Math.min(2, this.starList.length); 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
+        star = this.starList[i];
+        lightPos = vec3.fromValues(star[0], star[1], star[2]);
+        if (Math.abs(1.0 - (vec3.distance(lightPos, lightCenter) / vec3.length(lightCenter))) < 0.5) {
+          vec3.scale(lightCenter, lightCenter, 0.75);
+          vec3.scale(lightPos, lightPos, 0.25);
+          vec3.add(lightCenter, lightCenter, lightPos);
+        }
+      }
+      _ref1 = [vec3.create(), vec3.create(), vec3.create()], localPos = _ref1[0], globalPos = _ref1[1], lightVec = _ref1[2];
+      for (i = _j = _ref2 = this.meshPlanets.length - 1; _ref2 <= 0 ? _j <= 0 : _j >= 0; i = _ref2 <= 0 ? ++_j : --_j) {
+        _ref3 = this.meshPlanets[i], x = _ref3[0], y = _ref3[1], z = _ref3[2], w = _ref3[3], alpha = _ref3[4];
+        localPos = vec3.fromValues(x, y, z);
+        vec3.add(globalPos, localPos, camera.position);
+        vec3.subtract(lightVec, lightCenter, localPos);
         vec3.normalize(lightVec, lightVec);
-        this.farMesh.renderInstance(camera, pos, lightVec, alpha);
+        seed = Math.floor(w * 1000000);
+        textureMap = this.farMapCache.getContent(seed);
+        this.farMesh.renderInstance(camera, globalPos, lightVec, alpha, textureMap);
       }
       return this.farMesh.finishRender();
     };
