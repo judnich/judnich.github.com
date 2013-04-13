@@ -200,7 +200,7 @@
   };
 
   root.loadLocation = function() {
-    var i, words, x, _i, _j, _k, _l, _m, _n;
+    var i, x, _i, _j, _k;
     if (!window.location.hash) {
       if (typeof Storage !== void 0) {
         for (i = _i = 0; _i <= 2; i = ++_i) {
@@ -219,22 +219,30 @@
         return quat.copy(smoothRotation, desiredRotation);
       }
     } else {
-      words = window.location.hash.split(":");
-      if (words[0] === "#go") {
-        for (i = _l = 0; _l <= 2; i = ++_l) {
-          camera.position[i] = parseFloat(words[i + 1]);
-        }
-        for (i = _m = 0; _m <= 2; i = ++_m) {
-          originOffset[i] = parseFloat(words[i + 4]);
-        }
-        for (i = _n = 0; _n <= 3; i = ++_n) {
-          desiredRotation[i] = parseFloat(words[i + 7]);
-        }
-        quat.copy(smoothRotation, desiredRotation);
-      } else {
-        clearLocation();
+      if (!parseLocationString(window.location.hash)) {
+        parseLocationString("#go:-25.552404403686523:-30.029766082763672:-63.47420883178711:-15872:5888:11008:0.036:0.687:0.683:0.247");
       }
       return history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+  };
+
+  root.parseLocationString = function(hash) {
+    var i, words, _i, _j, _k;
+    words = hash.split(":");
+    if (words[0] === "#go") {
+      for (i = _i = 0; _i <= 2; i = ++_i) {
+        camera.position[i] = parseFloat(words[i + 1]);
+      }
+      for (i = _j = 0; _j <= 2; i = ++_j) {
+        originOffset[i] = parseFloat(words[i + 4]);
+      }
+      for (i = _k = 0; _k <= 3; i = ++_k) {
+        desiredRotation[i] = parseFloat(words[i + 7]);
+      }
+      quat.copy(smoothRotation, desiredRotation);
+      return true;
+    } else {
+      return false;
     }
   };
 
