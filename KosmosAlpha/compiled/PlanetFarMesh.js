@@ -8,13 +8,14 @@
   root.PlanetFarMesh = (function() {
 
     function PlanetFarMesh(geomRes) {
-      var buff, face, faceOffset, i, j, n, pos, u, v, v00, v01, v10, v11, _i, _j, _k, _l, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+      var buff, face, faceOffset, i, j, n, pixelSize, pos, u, v, v00, v01, v10, v11, _i, _j, _k, _l, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       this.geomRes = geomRes;
       this.shader = xgl.loadProgram("planetFarMesh");
       this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "alpha", "lightVec", "sampler"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aPos", "aUV"]);
       buff = new Float32Array(6 * (this.geomRes + 1) * (this.geomRes + 1) * 5);
       n = 0;
+      pixelSize = 1.0 / 512.0;
       for (face = _i = 0; _i <= 5; face = ++_i) {
         for (j = _j = 0, _ref = this.geomRes; 0 <= _ref ? _j <= _ref : _j >= _ref; j = 0 <= _ref ? ++_j : --_j) {
           for (i = _k = 0, _ref1 = this.geomRes; 0 <= _ref1 ? _k <= _ref1 : _k >= _ref1; i = 0 <= _ref1 ? ++_k : --_k) {
@@ -24,7 +25,7 @@
             buff[n] = pos[0];
             buff[n + 1] = pos[1];
             buff[n + 2] = pos[2];
-            buff[n + 3] = (u + face) / 6;
+            buff[n + 3] = (u * (1 - 2 * pixelSize) + pixelSize + face) / 6;
             buff[n + 4] = v;
             n += 5;
           }

@@ -47,7 +47,7 @@
       this.vBuff = gl.createBuffer();
       this.vBuff.itemSize = 6;
       this.vBuff.numItems = this._planetBufferSize * 4;
-      this.farMesh = new PlanetFarMesh(8);
+      this.farMesh = new PlanetFarMesh(16);
       this.farMapGen = new FarMapGenerator(512);
       generateCallback = (function(gen) {
         return function(seed) {

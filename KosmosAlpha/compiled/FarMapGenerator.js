@@ -35,7 +35,6 @@
           posV = mapPlaneToCube(uv[0], uv[1] + 1, faceIndex);
           binormal = [posU[0] - pos[0], posU[1] - pos[1], posU[2] - pos[2]];
           tangent = [posV[0] - pos[0], posV[1] - pos[1], posV[2] - pos[2]];
-          tangent = pos;
           buff[i++] = binormal[0];
           buff[i++] = binormal[1];
           buff[i++] = binormal[2];
