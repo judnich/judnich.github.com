@@ -92,6 +92,7 @@
       return document.getElementById("glErrorMessage").style.display = "block";
     });
     if (!root.gl) {
+      document.getElementById("glErrorMessage").style.display = "block";
       return;
     }
     starfield = new Starfield({
