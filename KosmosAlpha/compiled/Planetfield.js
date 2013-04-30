@@ -60,8 +60,8 @@
         };
       })(this);
       this.farMapCache = new ContentCache(16, generateCallback);
-      this.nearMesh = new PlanetNearMesh(64, 1024);
-      this.nearMapGen = new NearMapGenerator(1024);
+      this.nearMesh = new PlanetNearMesh(64, 4096);
+      this.nearMapGen = new NearMapGenerator(4096);
       generateCallback = (function(t) {
         return function(seed, partial) {
           return t.nearGenerateCallback(seed, partial);
