@@ -7,11 +7,28 @@
 
   root.Box = (function() {
 
-    function Box() {}
-
-    Box.min = vec3.fromValues(0, 0, 0);
-
-    Box.max = vec3.fromValues(1, 1, 1);
+    function Box(x0, y0, z0, x1, y1, z1) {
+      if (x0 == null) {
+        x0 = 0;
+      }
+      if (y0 == null) {
+        y0 = 0;
+      }
+      if (z0 == null) {
+        z0 = 0;
+      }
+      if (x1 == null) {
+        x1 = 1;
+      }
+      if (y1 == null) {
+        y1 = 1;
+      }
+      if (z1 == null) {
+        z1 = 1;
+      }
+      this.min = vec2.fromValues(x0, y0, z0);
+      this.max = vec2.fromValues(x1, y1, z1);
+    }
 
     Box.prototype.normalize = function() {
       var i, _i, _ref, _results;
@@ -95,11 +112,22 @@
 
   root.Rect = (function() {
 
-    function Rect() {}
-
-    Rect.min = vec2.fromValues(0, 0);
-
-    Rect.max = vec2.fromValues(1, 1);
+    function Rect(x0, y0, x1, y1) {
+      if (x0 == null) {
+        x0 = 0;
+      }
+      if (y0 == null) {
+        y0 = 0;
+      }
+      if (x1 == null) {
+        x1 = 1;
+      }
+      if (y1 == null) {
+        y1 = 1;
+      }
+      this.min = vec2.fromValues(x0, y0);
+      this.max = vec2.fromValues(x1, y1);
+    }
 
     Rect.prototype.normalize = function() {
       var i, _i, _ref, _results;
@@ -116,9 +144,9 @@
 
     Rect.prototype.getCenter = function() {
       var center;
-      center = vec3.create();
-      vec3.add(center, this.min, this.max);
-      vec3.scale(center, center, 0.5);
+      center = vec2.create();
+      vec2.add(center, this.min, this.max);
+      vec2.scale(center, center, 0.5);
       return center;
     };
 

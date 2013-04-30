@@ -11,6 +11,7 @@
       this.loadedItems = {};
       this.loadedCount = 0;
       this.queuedItems = [];
+      this.queuedIdSet = {};
       this.maxItems = maxItems;
       this.loaderCallback = loaderCallback;
     }
@@ -22,12 +23,22 @@
         item[1] = (new Date()).getTime();
         return item[0];
       }
-      this.queuedItems.push(contentId);
+      if (!this.queuedIdSet.hasOwnProperty(contentId)) {
+        this.queuedItems.push({
+          contentId: contentId,
+          partialContent: null
+        });
+        this.queuedIdSet[contentId] = true;
+      }
       return null;
     };
 
+    ContentCache.prototype.isUpToDate = function() {
+      return this.queuedItems.length === 0;
+    };
+
     ContentCache.prototype.update = function(maxItemsToLoad) {
-      var content, contentId, i, len, _i, _ref, _results;
+      var finished, i, len, loadTask, loadedObject, _i, _ref, _ref1, _results;
       if (maxItemsToLoad == null) {
         maxItemsToLoad = 1;
       }
@@ -38,12 +49,17 @@
       }
       _results = [];
       for (i = _i = 0, _ref = len - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
-        contentId = this.queuedItems.pop();
-        if (contentId !== void 0 && this.loadedItems[contentId] === void 0) {
-          console.log("Loading content: " + contentId);
-          content = this.loaderCallback(contentId);
-          this.loadedItems[contentId] = [content, (new Date()).getTime()];
-          _results.push(this.loadedCount++);
+        loadTask = this.queuedItems.pop();
+        if (loadTask !== void 0 && this.loadedItems[loadTask] === void 0) {
+          _ref1 = this.loaderCallback(loadTask.contentId, loadTask.partialContent), finished = _ref1[0], loadedObject = _ref1[1];
+          if (finished === true) {
+            this.loadedItems[loadTask.contentId] = [loadedObject, (new Date()).getTime()];
+            this.loadedCount++;
+            _results.push(delete this.queuedIdSet[loadTask.contentId]);
+          } else {
+            loadTask.partialContent = loadedObject;
+            _results.push(this.queuedItems.push(loadTask));
+          }
         } else {
           _results.push(void 0);
         }

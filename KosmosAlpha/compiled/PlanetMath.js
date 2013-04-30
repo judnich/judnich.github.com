@@ -7,6 +7,8 @@
 
   root.cubeFaceQuaternion = [];
 
+  root.cubeFaceMatrix = [];
+
   root.mapPlaneToCube = function(u, v, faceIndex) {
     var pos;
     pos = vec3.fromValues(u * 2 - 1, v * 2 - 1, 1);
@@ -15,7 +17,7 @@
   };
 
   initialize = function() {
-    var i, unitX, unitY, _i;
+    var i, unitX, unitY, _i, _j, _results;
     for (i = _i = 0; _i <= 5; i = ++_i) {
       cubeFaceQuaternion[i] = quat.create();
     }
@@ -25,7 +27,13 @@
     quat.setAxisAngle(cubeFaceQuaternion[2], unitY, xgl.degToRad(-90));
     quat.setAxisAngle(cubeFaceQuaternion[3], unitY, xgl.degToRad(90));
     quat.setAxisAngle(cubeFaceQuaternion[4], unitX, xgl.degToRad(90));
-    return quat.setAxisAngle(cubeFaceQuaternion[5], unitX, xgl.degToRad(-90));
+    quat.setAxisAngle(cubeFaceQuaternion[5], unitX, xgl.degToRad(-90));
+    _results = [];
+    for (i = _j = 0; _j <= 5; i = ++_j) {
+      cubeFaceMatrix[i] = mat3.create();
+      _results.push(mat3.fromQuat(cubeFaceMatrix[i], cubeFaceQuaternion[i]));
+    }
+    return _results;
   };
 
   initialize();
