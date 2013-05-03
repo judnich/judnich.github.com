@@ -11,7 +11,7 @@
       var buff, i, j, n, u, v, v00, v01, v10, v11, wallStart, _i, _j, _k, _l, _len, _len1, _len2, _len3, _m, _n, _o, _p, _q, _r, _ref, _ref1, _ref10, _ref11, _ref12, _ref13, _ref14, _ref15, _ref16, _ref17, _ref18, _ref19, _ref2, _ref20, _ref21, _ref22, _ref23, _ref24, _ref25, _ref26, _ref27, _ref28, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9, _s, _t;
       this.chunkRes = chunkRes;
       this.minRectSize = chunkRes / maxRes;
-      this.maxLodError = 0.015;
+      this.maxLodError = 0.020;
       this.shader = xgl.loadProgram("planetNearMesh");
       this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "sampler", "vertSampler", "uvRect"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aUV"]);

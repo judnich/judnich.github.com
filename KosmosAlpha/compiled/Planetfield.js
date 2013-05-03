@@ -68,7 +68,7 @@
         };
       })(this);
       this.nearMapCache = new ContentCache(4, generateCallback);
-      this.progressiveLoadSteps = 32.0;
+      this.progressiveLoadSteps = 64.0;
     }
 
     Planetfield.prototype.farGenerateCallback = function(seed, partial) {
@@ -87,16 +87,28 @@
         maps = partial.maps;
         face = partial.face;
       }
-      progressPlusOne = progress + (1.0 / this.progressiveLoadSteps);
-      this.nearMapGen.generateSubMap(maps, seed, face, progress, progressPlusOne);
-      if (progressPlusOne >= 1.0 - 0.0000001) {
-        this.nearMapGen.finalizeMaps(maps);
+      if (progress < 1.0 - 0.0000001) {
+        progressPlusOne = progress + (2.0 / this.progressiveLoadSteps);
+        if (progressPlusOne > 1.0) {
+          progressPlusOne = 1.0;
+        }
+        this.nearMapGen.generateSubMap(maps, seed, face, progress, progressPlusOne);
+      } else {
+        progressPlusOne = progress + 16 * (2.0 / this.progressiveLoadSteps);
+        if (progressPlusOne > 2.0) {
+          progressPlusOne = 2.0;
+        }
+        this.nearMapGen.generateSubFinalMap(maps, seed, face, progress - 1.0, progressPlusOne - 1.0);
+      }
+      if (progressPlusOne >= 2.0 - 0.0000001) {
         face++;
         progress = 0;
       } else {
         progress = progressPlusOne;
       }
       if (face >= 6) {
+        this.nearMapGen.finalizeMaps(maps);
+        console.log("Done loading high res maps for planet " + seed + "!");
         return [true, maps];
       } else {
         return [
