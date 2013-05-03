@@ -87,7 +87,7 @@
         maps[face] = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, maps[face]);
         if (face < 6) {
-          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         } else {
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -139,12 +139,6 @@
     };
 
     NearMapGenerator.prototype.finalizeMaps = function(maps) {
-      var i, _i;
-      for (i = _i = 0; _i <= 5; i = ++_i) {
-        gl.bindTexture(gl.TEXTURE_2D, maps[i]);
-        gl.generateMipmap(gl.TEXTURE_2D);
-      }
-      gl.bindTexture(gl.TEXTURE_2D, null);
       return delete maps[6];
     };
 

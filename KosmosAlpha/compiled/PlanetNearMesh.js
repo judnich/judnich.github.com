@@ -13,7 +13,7 @@
       this.minRectSize = chunkRes / maxRes;
       this.maxLodError = 0.020;
       this.shader = xgl.loadProgram("planetNearMesh");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "sampler", "vertSampler", "uvRect"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "camPos", "sampler", "vertSampler", "uvRect"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aUV"]);
       buff = new Float32Array(((this.chunkRes + 1) * (this.chunkRes + 1) + (this.chunkRes + 1) * 4) * 3);
       n = 0;
@@ -99,7 +99,7 @@
     }
 
     PlanetNearMesh.prototype.renderInstance = function(camera, planetPos, lightVec, alpha, textureMaps) {
-      var cubeFace, fullRect, modelViewMat, _i;
+      var cubeFace, fullRect, modelViewMat, relCamPos, _i;
       modelViewMat = mat4.create();
       mat4.translate(modelViewMat, modelViewMat, planetPos);
       mat4.mul(modelViewMat, camera.viewMat, modelViewMat);
@@ -107,6 +107,9 @@
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
       gl.uniform3fv(this.shader.uniforms.lightVec, lightVec);
       gl.uniform1f(this.shader.uniforms.alpha, alpha);
+      relCamPos = vec3.create();
+      vec3.sub(relCamPos, planetPos, camera.position);
+      gl.uniform3fv(this.shader.uniforms.camPos, relCamPos);
       gl.activeTexture(gl.TEXTURE0);
       gl.uniform1i(this.shader.uniforms.sampler, 0);
       gl.uniform1i(this.shader.uniforms.vertSampler, 0);
@@ -128,7 +131,7 @@
     };
 
     PlanetNearMesh.prototype.renderChunkRecursive = function(camera, planetPos, face, rect) {
-      var a, b, boundingHull, c, center, corner, corners, dist, i, mid, p, rectSize, screenSpaceError, topPointRadius, v, _i, _j, _k, _l, _len, _ref, _results;
+      var a, b, boundingHull, c, center, corner, corners, dist, i, ldiag, mid, p, p0, p1, pdiag, rectSize, screenSpaceError, topPointRadius, v, _i, _j, _k, _l, _len, _ref, _results;
       rectSize = rect.max[0] - rect.min[0];
       corners = rect.getCorners();
       mid = rect.getCenter();
@@ -168,7 +171,12 @@
       if (dist < 0.0000000001) {
         dist = 0.0000000001;
       }
-      screenSpaceError = (rectSize / this.chunkRes) / dist;
+      p0 = this.mapToSphere(face, corners[0], 1);
+      p1 = this.mapToSphere(face, corners[3], 1);
+      pdiag = vec3.create();
+      vec3.sub(pdiag, p1, p0);
+      ldiag = vec3.length(pdiag);
+      screenSpaceError = (ldiag / this.chunkRes) / dist;
       if (screenSpaceError < this.maxLodError || rectSize < this.minRectSize * 0.99) {
         return this.renderChunk(face, rect);
       } else {
