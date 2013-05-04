@@ -144,8 +144,20 @@
     }
   };
 
-  root.kosmosSetSpeed = function(speed) {
-    desiredSpeed = speed;
+  root.kosmosSetSpeed = function(speed, reverse) {
+    var espeed;
+    if (autopilot === true) {
+      espeed = Math.pow(3.0, Math.abs(speed) * 8.0 + 0.0);
+    } else {
+      espeed = Math.pow(3.0, Math.abs(speed) * 22.0 - 12.0);
+    }
+    if (speed <= 0) {
+      espeed = 0;
+    }
+    if (reverse) {
+      espeed *= -1;
+    }
+    desiredSpeed = espeed;
     return resumeAnimating();
   };
 
