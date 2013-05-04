@@ -13,7 +13,7 @@
       this.minRectSize = chunkRes / maxRes;
       this.maxLodError = 0.020;
       this.shader = xgl.loadProgram("planetNearMesh");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "camPos", "sampler", "vertSampler", "uvRect"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "sampler", "vertSampler", "uvRect"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aUV"]);
       buff = new Float32Array(((this.chunkRes + 1) * (this.chunkRes + 1) + (this.chunkRes + 1) * 4) * 3);
       n = 0;

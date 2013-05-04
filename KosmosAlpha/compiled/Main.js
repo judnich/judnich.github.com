@@ -70,7 +70,7 @@
 
   mouseMove = function(event) {
     var rightPanel, x, y, _ref;
-    _ref = [event.x, event.y], x = _ref[0], y = _ref[1];
+    _ref = [event.clientX, event.clientY], x = _ref[0], y = _ref[1];
     rightPanel = document.getElementById("rightbar");
     x = (x - rightPanel.offsetLeft - 1) / canvas.clientWidth;
     y = (y - rightPanel.offsetTop - 1) / canvas.clientHeight;
@@ -83,10 +83,10 @@
 
   root.kosmosMain = function() {
     console.log("Initializing Kosmos Engine");
-    root.canvas = document.getElementById("kosmosCanvas");
-    canvas.addEventListener("mousedown", mouseDown, false);
-    canvas.addEventListener("mouseup", mouseUp, false);
-    canvas.addEventListener("mousemove", mouseMove, false);
+    root.canvas = $("#kosmosCanvas")[0];
+    $(canvas).mousedown(mouseDown);
+    $(canvas).mouseup(mouseUp);
+    $(canvas).mousemove(mouseMove);
     kosmosResize();
     root.gl = WebGLUtils.setupWebGL(canvas, void 0, function() {
       return document.getElementById("glErrorMessage").style.display = "block";
@@ -117,6 +117,9 @@
     camera.position = vec3.fromValues(0, 0, 0);
     camera.fov = xgl.degToRad(90);
     loadLocation();
+    window.onhashchange = function() {
+      return loadLocation();
+    };
     return resumeAnimating();
   };
 
@@ -228,8 +231,10 @@
       if (!parseLocationString(window.location.hash)) {
         parseLocationString("#go:-137.62518310546875:13.487885475158691:-41.893638610839844:6784:-6272:16128:0.551:-0.258:0.194:0.769");
       }
-      return history.pushState("", document.title, window.location.pathname + window.location.search);
+      history.pushState("", document.title, window.location.pathname + window.location.search);
     }
+    desiredSpeed = 0.0;
+    return smoothSpeed = 0.0;
   };
 
   root.parseLocationString = function(hash) {
@@ -294,7 +299,7 @@
         mat[2] = look[0], mat[5] = look[1], mat[8] = look[2];
         q = quat.create();
         quat.fromMat3(q, mat);
-        quat.slerp(desiredRotation, desiredRotation, q, 0.05 * a);
+        quat.slerp(desiredRotation, desiredRotation, q, 0.15 * a);
       }
     }
     quat.slerp(smoothRotation, smoothRotation, desiredRotation, 0.05);

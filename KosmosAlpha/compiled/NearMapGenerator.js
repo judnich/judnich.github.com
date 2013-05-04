@@ -109,16 +109,17 @@
       gl.vertexAttribPointer(this.normalGenShader.attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
       gl.vertexAttribPointer(this.normalGenShader.attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
       gl.vertexAttribPointer(this.normalGenShader.attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
-      dataMap = maps[faceIndex];
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dataMap, 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, maps[6]);
       gl.uniform1i(this.normalGenShader.uniforms.sampler, 0);
+      dataMap = maps[faceIndex];
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dataMap, 0);
       gl.viewport(0, this.fbo.height * startFraction, this.fbo.width, this.fbo.height * (endFraction - startFraction));
       gl.scissor(0, this.fbo.height * startFraction, this.fbo.width, this.fbo.height * (endFraction - startFraction));
       gl.uniform2f(this.normalGenShader.uniforms.verticalViewport, startFraction, endFraction - startFraction);
       indicesPerFace = this.quadVerts.numItems / 6;
-      return gl.drawArrays(gl.TRIANGLES, indicesPerFace * faceIndex, indicesPerFace);
+      gl.drawArrays(gl.TRIANGLES, indicesPerFace * faceIndex, indicesPerFace);
+      return gl.bindTexture(gl.TEXTURE_2D, null);
     };
 
     NearMapGenerator.prototype.generateSubMap = function(maps, seed, faceIndex, startFraction, endFraction) {
