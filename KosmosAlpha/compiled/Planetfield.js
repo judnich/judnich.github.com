@@ -68,7 +68,7 @@
         };
       })(this);
       this.nearMapCache = new ContentCache(4, generateCallback);
-      this.progressiveLoadSteps = 64.0;
+      this.progressiveLoadSteps = 128.0;
     }
 
     Planetfield.prototype.farGenerateCallback = function(seed, partial) {
