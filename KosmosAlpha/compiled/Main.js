@@ -141,9 +141,6 @@
     if (devicePixelRatio < 2 && (canvas.clientWidth < 1440 || canvas.clientHeight < 900)) {
       devicePixelRatio = 2;
     }
-    if (devicePixelRatio < 2) {
-      devicePixelRatio = 2;
-    }
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
     console.log("Main framebuffer resolution " + canvas.width + " x " + canvas.height, "with device pixel ratio " + devicePixelRatio);
