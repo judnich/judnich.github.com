@@ -138,7 +138,7 @@
       console.log("Note: Device pixel scaling (retina) is disabled.");
     }
     devicePixelRatio = enableRetina ? window.devicePixelRatio || 1 : 1;
-    if (devicePixelRatio < 2 && (canvas.clientWidth < 1280 || canvas.clientHeight < 800)) {
+    if (devicePixelRatio < 2 && (canvas.clientWidth < 1440 || canvas.clientHeight < 900)) {
       devicePixelRatio = 2;
     }
     if (devicePixelRatio < 2) {
