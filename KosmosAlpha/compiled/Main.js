@@ -90,7 +90,10 @@
     $(canvas).mouseup(mouseUp);
     $(canvas).mousemove(mouseMove);
     kosmosResize();
-    root.gl = WebGLUtils.setupWebGL(canvas, void 0, function() {
+    root.gl = WebGLUtils.setupWebGL(canvas, {
+      antialias: true,
+      stencil: false
+    }, function() {
       return document.getElementById("glErrorMessage").style.display = "block";
     });
     if (!root.gl) {
@@ -135,6 +138,12 @@
       console.log("Note: Device pixel scaling (retina) is disabled.");
     }
     devicePixelRatio = enableRetina ? window.devicePixelRatio || 1 : 1;
+    if (devicePixelRatio < 2 && (canvas.clientWidth < 1280 || canvas.clientHeight < 800)) {
+      devicePixelRatio = 2;
+    }
+    if (devicePixelRatio < 2) {
+      devicePixelRatio = 2;
+    }
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
     console.log("Main framebuffer resolution " + canvas.width + " x " + canvas.height, "with device pixel ratio " + devicePixelRatio);

@@ -126,7 +126,7 @@
       var pos;
       pos = mapPlaneToCube(point[0], point[1], face);
       vec3.normalize(pos, pos);
-      vec3.scale(pos, pos, 0.99 + height * 0.01);
+      vec3.scale(pos, pos, 0.985 + height * 0.015);
       return pos;
     };
 

@@ -53,7 +53,7 @@
       this.vBuff.itemSize = 6;
       this.vBuff.numItems = this._planetBufferSize * 4;
       this.farMesh = new PlanetFarMesh(8);
-      this.farMapGen = new FarMapGenerator(128);
+      this.farMapGen = new FarMapGenerator(256);
       generateCallback = (function(t) {
         return function(seed, partial) {
           return t.farGenerateCallback(seed, partial);
