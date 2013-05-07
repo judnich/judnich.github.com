@@ -1,0 +1,117 @@
+<!DOCTYPE HTML5>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<html encoding="utf-8">
+	<head>
+		<title>Kosmos</title>
+		<meta charset="UTF-8"/>
+		<meta name="description" content="Kosmos allows you to explore a computer-generated 3D universe from your browser."/>
+		<meta name="author" content="John Judnich"/>
+		<meta name="keywords" content="kosmos, 3d universe, virtual universe, webgl"/>
+
+		<link href="style.css" rel="stylesheet" type="text/css"/>
+
+		<script type="text/javascript" src="external/jquery-1.9.1.min.js"></script>
+		<script type="text/javascript" src="index.js"></script>
+	</head>
+
+	<body onload="jsMain();">
+		<div class="sidebar" id="sidebar">
+			<table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"><tr><td>
+
+			<span class="title" style="cursor: pointer;" onClick="showIntro();">Kosmos</span>
+			<span class="subtitle">Virtual 3D Universe</span>
+
+			</td></tr><tr valign="middle" height="100%"><td valign="middle" height="100%">
+
+			<center>Speed</center>
+			<div id="slider" class="slider"><div id="sliderBar" class="sliderBar"></div></div>
+			<div id="reverse" onClick="toggleReverse();" class="btn">Reverse</div>
+
+			<div id="autopilot" onClick="toggleAutopilot();" class="btn lit">Autopilot</div>
+			<div height="10px">&nbsp;</div>
+			<div id="shareBtn" onClick="showShare();" class="btn">Share</div>
+
+			</td></tr><tr><td height="30px">
+			
+			<a href="http://judnich.github.io/" target="_blank"><span class="footer">Copyright &copy; 2013<br/>John Judnich</span></a>
+
+			</td></tr></table>
+		</div>
+
+		<div class="rightbar" id="rightbar">
+			<canvas id="kosmosCanvas" onClick="hideIntro();"></canvas>
+		</div>
+
+		<div class="message" id="introMessage">
+			<div class="title">Welcome to Kosmos</div>
+			<p><i>Kosmos allows you to explore a computer-generated 3D universe from your browser.</i></p>
+			<p>Click anywhere to navigate, and adjust speed with the big slider bar on the left.</p>
+			<div class="okButton" onClick="hideIntro();">Ok</div>
+		</div>
+
+		<div class="message" id="glErrorMessage">
+			<div class="title">3D Graphics Error!</div>
+			<p>Unfortunately, your web browser reports it does not support 3D graphics (no "WebGL").</p><p>
+			Please upgrade to a modern browser to use Kosmos. <b>Mozilla Firefox</b> seems to work the best.</p>
+			<div class="okButton" onClick="hideErrorMessage()">Ok</div>
+		</div>
+
+		<div class="message big" id="browserErrorMessage">
+			<div class="title">Compatibility Warning</div>
+			<p>Unfortunately, we found that some browsers (especially <i>Google Chrome</i> and <i>Apple Safari</i>) have serious performance and/or compatibility issues with <b>complex</b> WebGL apps, like Kosmos.</p>
+			<p>While Chrome and Firefox should work fine on Mac and Linux, only <a href="http://www.mozilla.org/en-US/firefox/new/"><b>Mozilla Firefox</b></a> 
+			worked consistently in our testing across all operating systems.</p>
+			<div class="okButton wide" onClick="hideBrowserMessage();">Try Anyway</div>
+		</div>
+
+		<div class="message tall" id="shareMessage">
+			<div class="title">Share this View</div>
+			<p>The URL below to links directly to what you're seeing now. Simply copy and paste into your preferred networking app.</p>
+
+			<textarea readonly rows="3" id="shareLink" onClick="this.focus(); this.select()" class="linkBox"></textarea>
+
+			<!--<div class="okButton" onClick="hideShare();">Share on Facebook</div>
+			<div class="okButton" onClick="hideShare();">Share on Twitter</div>-->
+			<div class="okButton" onClick="hideShare();">Close</div>
+		</div>
+
+		<script type="text/javascript" src="external/gl-matrix-min.js"></script>
+		<!--<script type="text/javascript" src="external/gl-matrix.js"></script>-->
+
+		<script type="text/javascript" src="external/webgl-utils.js"></script>
+		<script type="text/javascript" src="compiled/xgl.js"></script>
+		<script type="text/javascript" src="compiled/NoiseShader.js"></script>
+
+		<script type="text/javascript" src="compiled/RandomStream.js"></script>
+		<script type="text/javascript" src="compiled/Bounds.js"></script>
+		<script type="text/javascript" src="compiled/Camera.js"></script>
+		<script type="text/javascript" src="compiled/ContentCache.js"></script>
+
+		<script type="text/javascript" src="compiled/Starfield.js"></script>
+		<script type="text/javascript" src="compiled/StarfieldShader.js"></script>
+
+
+		<script type="text/javascript" src="compiled/PlanetMath.js"></script>
+
+		<script type="text/javascript" src="compiled/Planetfield.js"></script>
+		<script type="text/javascript" src="compiled/PlanetfieldShader.js"></script>
+
+		<script type="text/javascript" src="compiled/PlanetFarMesh.js"></script>
+		<script type="text/javascript" src="compiled/PlanetFarMeshShader.js"></script>
+
+		<script type="text/javascript" src="compiled/FarMapGenerator.js"></script>
+		<script type="text/javascript" src="compiled/FarMapGeneratorShader.js"></script>
+
+		<script type="text/javascript" src="compiled/PlanetNearMesh.js"></script>
+		<script type="text/javascript" src="compiled/PlanetNearMeshShader.js"></script>
+
+		<script type="text/javascript" src="compiled/NearMapGenerator.js"></script>
+		<script type="text/javascript" src="compiled/NearMapGeneratorShader.js"></script>
+		<script type="text/javascript" src="compiled/NormalMapGeneratorShader.js"></script>
+
+		<script type="text/javascript" src="compiled/Main.js"></script>
+
+
+	</body>
+</html>
