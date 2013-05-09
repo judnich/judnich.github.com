@@ -217,7 +217,7 @@
       }
     }
     if (document.getElementById("shareMessage").style.display === "block") {
-      url = "http://judnich.github.io/KosmosAlpha/index.html#go";
+      url = "http://judnich.github.io/Kosmos/index.html#go";
       for (i = _l = 0; _l <= 2; i = ++_l) {
         url += ":" + camera.position[i];
       }
