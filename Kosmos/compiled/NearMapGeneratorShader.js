@@ -3,9 +3,9 @@
 (function() {
   var frag, i, vert, _i, _ref;
 
-  frag = "precision highp float;\n\nvarying vec3 vPos;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\n\nuniform vec4 randomSeed;\n\n#define ONE_TEXEL (1.0/4096.0)\n\n\nfloat getHeightOnCube(vec3 cubePos)\n{\n        vec3 pos = normalize(cubePos);\n        return heightFunc(pos, randomSeed);\n }\n\n\nvoid main(void) {\n        float height = getHeightOnCube(vPos);\n        gl_FragColor = vec4(height, height, height, height);\n}\n";
+  frag = "//precision highp float;\n\nvarying vec3 vPos;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec3 vRandomSeed;\n\n#define ONE_TEXEL (1.0/4096.0)\n\n\nfloat getHeightOnCube(vec3 cubePos)\n{\n        vec3 pos = normalize(cubePos);\n        return heightFunc(pos, vRandomSeed);\n }\n\n\nvoid main(void) {\n        float height = getHeightOnCube(vPos);\n        gl_FragColor = vec4(height, height, height, height);\n}\n";
 
-  vert = "attribute vec2 aUV;\nattribute vec3 aPos;\nattribute vec3 aTangent;\nattribute vec3 aBinormal;\nvarying vec3 vPos;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\n\nuniform vec2 verticalViewport;\n\nvoid main(void) {\n	vPos = aPos;\n        vTangent = aTangent;\n        vBinormal = aBinormal;\n\n        vec2 pos = aUV;\n        pos.y = (pos.y - verticalViewport.x) / verticalViewport.y;\n        pos = pos * 2.0 - 1.0;\n\n	gl_Position = vec4(pos, 0.0, 1.0);\n}\n";
+  vert = "attribute vec2 aUV;\nattribute vec3 aPos;\nattribute vec3 aTangent;\nattribute vec3 aBinormal;\nvarying vec3 vPos;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\n\nuniform vec2 verticalViewport;\n\nvarying vec3 vRandomSeed;\nuniform vec4 randomSeed;\n\nvoid main(void) {\n	vPos = aPos;\n        vTangent = aTangent;\n        vBinormal = aBinormal;\n        vRandomSeed = randomSeed.xyz;\n\n        vec2 pos = aUV;\n        pos.y = (pos.y - verticalViewport.x) / verticalViewport.y;\n        pos = pos * 2.0 - 1.0;\n\n	gl_Position = vec4(pos, 0.0, 1.0);\n}\n";
 
   for (i = _i = 0, _ref = kosmosShaderHeightFunctions.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
     xgl.addProgram("nearMapGenerator" + i, vert, xgl.commonNoiseShaderSource + kosmosShaderHeightFunctions[i] + frag);

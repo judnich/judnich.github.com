@@ -126,7 +126,8 @@
       }
       gl.bindTexture(gl.TEXTURE_2D, null);
       gl.activeTexture(gl.TEXTURE1);
-      return gl.bindTexture(gl.TEXTURE_2D, null);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      return gl.activeTexture(gl.TEXTURE0);
     };
 
     PlanetNearMesh.prototype.mapToSphere = function(face, point, height) {

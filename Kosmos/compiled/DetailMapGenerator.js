@@ -66,6 +66,7 @@
       gl.bindTexture(gl.TEXTURE_2D, null);
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, detailMap, 0);
       gl.drawArrays(gl.TRIANGLES, 0, this.quadVerts.numItems);
+      gl.useProgram(null);
       this._finish();
       return detailMap;
     };
