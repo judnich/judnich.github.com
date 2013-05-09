@@ -13,7 +13,7 @@
       this.minRectSize = chunkRes / maxRes;
       this.maxLodError = 0.020;
       this.shader = xgl.loadProgram("planetNearMesh");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "sampler", "vertSampler", "uvRect"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "cubeMat", "lightVec", "sampler", "vertSampler", "detailSampler", "uvRect", "planetColor1", "planetColor2"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aUV"]);
       buff = new Float32Array(((this.chunkRes + 1) * (this.chunkRes + 1) + (this.chunkRes + 1) * 4) * 3);
       n = 0;
@@ -98,7 +98,7 @@
       }
     }
 
-    PlanetNearMesh.prototype.renderInstance = function(camera, planetPos, lightVec, alpha, textureMaps) {
+    PlanetNearMesh.prototype.renderInstance = function(camera, planetPos, lightVec, alpha, textureMaps, detailMap, color1, color2) {
       var cubeFace, fullRect, modelViewMat, relCamPos, _i;
       modelViewMat = mat4.create();
       mat4.translate(modelViewMat, modelViewMat, planetPos);
@@ -107,9 +107,14 @@
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
       gl.uniform3fv(this.shader.uniforms.lightVec, lightVec);
       gl.uniform1f(this.shader.uniforms.alpha, alpha);
+      gl.uniform3fv(this.shader.uniforms.planetColor1, color1);
+      gl.uniform3fv(this.shader.uniforms.planetColor2, color2);
       relCamPos = vec3.create();
       vec3.sub(relCamPos, planetPos, camera.position);
       gl.uniform3fv(this.shader.uniforms.camPos, relCamPos);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, detailMap);
+      gl.uniform1i(this.shader.uniforms.detailSampler, 1);
       gl.activeTexture(gl.TEXTURE0);
       gl.uniform1i(this.shader.uniforms.sampler, 0);
       gl.uniform1i(this.shader.uniforms.vertSampler, 0);
@@ -119,6 +124,8 @@
         gl.uniformMatrix3fv(this.shader.uniforms.cubeMat, false, cubeFaceMatrix[cubeFace]);
         this.renderChunkRecursive(camera, planetPos, cubeFace, fullRect);
       }
+      gl.bindTexture(gl.TEXTURE_2D, null);
+      gl.activeTexture(gl.TEXTURE1);
       return gl.bindTexture(gl.TEXTURE_2D, null);
     };
 

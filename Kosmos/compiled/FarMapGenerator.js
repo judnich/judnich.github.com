@@ -8,9 +8,13 @@
   root.FarMapGenerator = (function() {
 
     function FarMapGenerator(mapResolution) {
-      var binormal, buff, faceIndex, i, pos, posU, posV, tangent, uv, _i, _j, _len, _ref;
-      this.shader = xgl.loadProgram("farMapGenerator");
-      this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aUV", "aPos", "aTangent", "aBinormal"]);
+      var binormal, buff, faceIndex, i, pos, posU, posV, tangent, uv, _i, _j, _k, _len, _ref, _ref1;
+      this.shader = [];
+      for (i = _i = 0, _ref = kosmosShaderHeightFunctions.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        this.shader[i] = xgl.loadProgram("farMapGenerator" + i);
+        this.shader[i].uniforms = xgl.getProgramUniforms(this.shader[i], ["randomSeed"]);
+        this.shader[i].attribs = xgl.getProgramAttribs(this.shader[i], ["aUV", "aPos", "aTangent", "aBinormal"]);
+      }
       this.fbo = gl.createFramebuffer();
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
       this.fbo.width = mapResolution * 6;
@@ -21,10 +25,10 @@
       i = 0;
       tangent = [0, 0, 0];
       binormal = [0, 0, 0];
-      for (faceIndex = _i = 0; _i <= 5; faceIndex = ++_i) {
-        _ref = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
-        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
-          uv = _ref[_j];
+      for (faceIndex = _j = 0; _j <= 5; faceIndex = ++_j) {
+        _ref1 = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
+        for (_k = 0, _len = _ref1.length; _k < _len; _k++) {
+          uv = _ref1[_k];
           pos = mapPlaneToCube(uv[0], uv[1], faceIndex);
           buff[i++] = (uv[0] + faceIndex) / 6.0;
           buff[i++] = uv[1];
@@ -54,25 +58,20 @@
     FarMapGenerator.prototype.start = function() {
       gl.disable(gl.DEPTH_TEST);
       gl.depthMask(false);
-      gl.useProgram(this.shader);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
       gl.viewport(0, 0, this.fbo.width, this.fbo.height);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVerts);
-      gl.enableVertexAttribArray(this.shader.attribs.aUV);
-      gl.vertexAttribPointer(this.shader.attribs.aUV, 2, gl.FLOAT, false, this.quadVerts.itemSize * 4, 0);
-      gl.enableVertexAttribArray(this.shader.attribs.aPos);
-      gl.vertexAttribPointer(this.shader.attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
-      gl.enableVertexAttribArray(this.shader.attribs.aBinormal);
-      gl.vertexAttribPointer(this.shader.attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
-      gl.enableVertexAttribArray(this.shader.attribs.aTangent);
-      return gl.vertexAttribPointer(this.shader.attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
+      gl.enableVertexAttribArray(this.shader[0].attribs.aUV);
+      gl.enableVertexAttribArray(this.shader[0].attribs.aPos);
+      gl.enableVertexAttribArray(this.shader[0].attribs.aBinormal);
+      return gl.enableVertexAttribArray(this.shader[0].attribs.aTangent);
     };
 
     FarMapGenerator.prototype.finish = function() {
-      gl.disableVertexAttribArray(this.shader.attribs.aUV);
-      gl.disableVertexAttribArray(this.shader.attribs.aPos);
-      gl.disableVertexAttribArray(this.shader.attribs.aBinormal);
-      gl.disableVertexAttribArray(this.shader.attribs.aTangent);
+      gl.disableVertexAttribArray(this.shader[0].attribs.aUV);
+      gl.disableVertexAttribArray(this.shader[0].attribs.aPos);
+      gl.disableVertexAttribArray(this.shader[0].attribs.aBinormal);
+      gl.disableVertexAttribArray(this.shader[0].attribs.aTangent);
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.useProgram(null);
@@ -81,7 +80,17 @@
     };
 
     FarMapGenerator.prototype.generate = function(seed) {
-      var heightMap;
+      var heightMap, rndStr, seeds, shaderIndex;
+      rndStr = new RandomStream(seed);
+      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit(), rndStr.unit()];
+      shaderIndex = rndStr.intRange(0, kosmosShaderHeightFunctions.length - 1);
+      console.log("Using planet category " + shaderIndex);
+      gl.useProgram(this.shader[shaderIndex]);
+      gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aUV, 2, gl.FLOAT, false, this.quadVerts.itemSize * 4, 0);
+      gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
+      gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
+      gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
+      gl.uniform4fv(this.shader[shaderIndex].uniforms.randomSeed, seeds);
       heightMap = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, heightMap);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);

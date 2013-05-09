@@ -8,10 +8,13 @@
   root.NearMapGenerator = (function() {
 
     function NearMapGenerator(mapResolution) {
-      var binormal, buff, faceIndex, i, pos, posU, posV, tangent, uv, _i, _j, _len, _ref;
-      this.heightGenShader = xgl.loadProgram("nearMapGenerator");
-      this.heightGenShader.uniforms = xgl.getProgramUniforms(this.heightGenShader, ["verticalViewport"]);
-      this.heightGenShader.attribs = xgl.getProgramAttribs(this.heightGenShader, ["aUV", "aPos", "aTangent", "aBinormal"]);
+      var binormal, buff, faceIndex, i, pos, posU, posV, tangent, uv, _i, _j, _k, _len, _ref, _ref1;
+      this.heightGenShader = [];
+      for (i = _i = 0, _ref = kosmosShaderHeightFunctions.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        this.heightGenShader[i] = xgl.loadProgram("nearMapGenerator" + i);
+        this.heightGenShader[i].uniforms = xgl.getProgramUniforms(this.heightGenShader[i], ["verticalViewport", "randomSeed"]);
+        this.heightGenShader[i].attribs = xgl.getProgramAttribs(this.heightGenShader[i], ["aUV", "aPos", "aTangent", "aBinormal"]);
+      }
       this.normalGenShader = xgl.loadProgram("normalMapGenerator");
       this.normalGenShader.uniforms = xgl.getProgramUniforms(this.normalGenShader, ["verticalViewport", "sampler"]);
       this.normalGenShader.attribs = xgl.getProgramAttribs(this.normalGenShader, ["aUV", "aPos", "aTangent", "aBinormal"]);
@@ -25,10 +28,10 @@
       i = 0;
       tangent = [0, 0, 0];
       binormal = [0, 0, 0];
-      for (faceIndex = _i = 0; _i <= 5; faceIndex = ++_i) {
-        _ref = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
-        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
-          uv = _ref[_j];
+      for (faceIndex = _j = 0; _j <= 5; faceIndex = ++_j) {
+        _ref1 = [[0, 0], [1, 0], [0, 1], [1, 0], [1, 1], [0, 1]];
+        for (_k = 0, _len = _ref1.length; _k < _len; _k++) {
+          uv = _ref1[_k];
           pos = mapPlaneToCube(uv[0], uv[1], faceIndex);
           buff[i++] = uv[0];
           buff[i++] = uv[1];
@@ -123,18 +126,22 @@
     };
 
     NearMapGenerator.prototype.generateSubMap = function(maps, seed, faceIndex, startFraction, endFraction) {
-      var dataMap, indicesPerFace;
-      gl.useProgram(this.heightGenShader);
+      var dataMap, indicesPerFace, rndStr, seeds, shaderIndex;
+      rndStr = new RandomStream(seed);
+      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit(), rndStr.unit()];
+      shaderIndex = rndStr.intRange(0, kosmosShaderHeightFunctions.length - 1);
+      gl.useProgram(this.heightGenShader[shaderIndex]);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVerts);
-      gl.vertexAttribPointer(this.heightGenShader.attribs.aUV, 2, gl.FLOAT, false, this.quadVerts.itemSize * 4, 0);
-      gl.vertexAttribPointer(this.heightGenShader.attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
-      gl.vertexAttribPointer(this.heightGenShader.attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
-      gl.vertexAttribPointer(this.heightGenShader.attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
+      gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aUV, 2, gl.FLOAT, false, this.quadVerts.itemSize * 4, 0);
+      gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
+      gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
+      gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
+      gl.uniform4fv(this.heightGenShader[shaderIndex].uniforms.randomSeed, seeds);
       dataMap = maps[6];
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dataMap, 0);
       gl.viewport(0, this.fbo.height * startFraction, this.fbo.width, this.fbo.height * (endFraction - startFraction));
       gl.scissor(0, this.fbo.height * startFraction, this.fbo.width, this.fbo.height * (endFraction - startFraction));
-      gl.uniform2f(this.heightGenShader.uniforms.verticalViewport, startFraction, endFraction - startFraction);
+      gl.uniform2f(this.heightGenShader[shaderIndex].uniforms.verticalViewport, startFraction, endFraction - startFraction);
       indicesPerFace = this.quadVerts.numItems / 6;
       return gl.drawArrays(gl.TRIANGLES, indicesPerFace * faceIndex, indicesPerFace);
     };

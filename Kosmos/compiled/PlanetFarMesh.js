@@ -11,7 +11,7 @@
       var buff, face, faceOffset, i, j, n, pixelSize, pos, u, v, v00, v01, v10, v11, _i, _j, _k, _l, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       this.geomRes = geomRes;
       this.shader = xgl.loadProgram("planetFarMesh");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "alpha", "lightVec", "sampler"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "alpha", "lightVec", "sampler", "planetColor1", "planetColor2"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aPos", "aUV"]);
       buff = new Float32Array(6 * (this.geomRes + 1) * (this.geomRes + 1) * 5);
       n = 0;
@@ -66,7 +66,7 @@
       }
     }
 
-    PlanetFarMesh.prototype.renderInstance = function(camera, posVec, lightVec, alpha, textureMap) {
+    PlanetFarMesh.prototype.renderInstance = function(camera, posVec, lightVec, alpha, textureMap, color1, color2) {
       var modelViewMat;
       modelViewMat = mat4.create();
       mat4.translate(modelViewMat, modelViewMat, posVec);
@@ -75,6 +75,8 @@
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
       gl.uniform3fv(this.shader.uniforms.lightVec, lightVec);
       gl.uniform1f(this.shader.uniforms.alpha, alpha);
+      gl.uniform3fv(this.shader.uniforms.planetColor1, color1);
+      gl.uniform3fv(this.shader.uniforms.planetColor2, color2);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textureMap);
       gl.uniform1i(this.shader.uniforms.sampler, 0);

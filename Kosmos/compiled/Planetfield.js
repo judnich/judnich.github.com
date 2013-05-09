@@ -7,10 +7,12 @@
 
   root.planetBufferSize = 100;
 
+  root.planetColors = [[[0.9, 0.7, 0.4], [0.6, 0.4, 0.2]], [[0.05, 0.0, 0.05], [0.5, 0.1, 0.5]], [[0.2, 0.6, 0.3], [0.4, 0.3, 0.1]], [[0.90, 0.95, 1.0], [0.5, 0.5, 0.5]], [[0.0, -50.0, -50.0], [0.0, 10.0, 10.0]], [[0.562, 0.225, 0.0], [0.375, 0.0, 0.0]]];
+
   root.Planetfield = (function() {
 
     function Planetfield(_arg) {
-      var angle, farMeshRange, generateCallback, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearMeshRange, planetSize, randAngle, randomStream, spriteRange, starfield, u, v, vi, _i, _j, _ref;
+      var angle, detailMapGen, farMeshRange, generateCallback, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearMeshRange, planetSize, randAngle, randomStream, spriteRange, starfield, u, v, vi, _i, _j, _ref;
       starfield = _arg.starfield, maxPlanetsPerSystem = _arg.maxPlanetsPerSystem, minOrbitScale = _arg.minOrbitScale, maxOrbitScale = _arg.maxOrbitScale, planetSize = _arg.planetSize, nearMeshRange = _arg.nearMeshRange, farMeshRange = _arg.farMeshRange, spriteRange = _arg.spriteRange;
       this._starfield = starfield;
       this._planetBufferSize = root.planetBufferSize;
@@ -68,7 +70,12 @@
         };
       })(this);
       this.nearMapCache = new ContentCache(4, generateCallback);
+      console.log("Generating detail maps");
+      detailMapGen = new DetailMapGenerator(512);
+      this.detailMapTex = detailMapGen.generate();
+      console.log("Done generating detail maps");
       this.progressiveLoadSteps = 128.0;
+      this.loadingHurryFactor = 1.0;
     }
 
     Planetfield.prototype.farGenerateCallback = function(seed, partial) {
@@ -88,13 +95,13 @@
         face = partial.face;
       }
       if (progress < 1.0 - 0.0000001) {
-        progressPlusOne = progress + (2.0 / this.progressiveLoadSteps);
+        progressPlusOne = progress + (2.0 / this.progressiveLoadSteps) * this.loadingHurryFactor;
         if (progressPlusOne > 1.0) {
           progressPlusOne = 1.0;
         }
         this.nearMapGen.generateSubMap(maps, seed, face, progress, progressPlusOne);
       } else {
-        progressPlusOne = progress + 16 * (2.0 / this.progressiveLoadSteps);
+        progressPlusOne = progress + 16 * (2.0 / this.progressiveLoadSteps) * this.loadingHurryFactor;
         if (progressPlusOne > 2.0) {
           progressPlusOne = 2.0;
         }
@@ -139,6 +146,7 @@
     };
 
     Planetfield.prototype.render = function(camera, originOffset, blur) {
+      var nearestPlanetDist;
       this.starList = this._starfield.queryStars(camera.position, originOffset, this.spriteRange);
       this.starList.sort(function(_arg, _arg1) {
         var aw, ax, ay, az, cw, cx, cy, cz;
@@ -151,6 +159,17 @@
       this.renderSprites(camera, originOffset, blur);
       this.renderFarMeshes(camera, originOffset);
       this.renderNearMeshes(camera, originOffset);
+      nearestPlanetDist = this.getDistanceToClosestPlanet();
+      this._oldHurry = this.loadingHurryFactor;
+      if (nearestPlanetDist < 1.0) {
+        this.loadingHurryFactor = 8.0;
+      } else if (nearestPlanetDist < 2.5) {
+        this.loadingHurryFactor = 4.0;
+      } else if (nearestPlanetDist < 5.0) {
+        this.loadingHurryFactor = 2.0;
+      } else {
+        this.loadingHurryFactor = 1.0;
+      }
       this.farMapGen.start();
       this.farMapCache.update(1);
       this.farMapGen.finish();
@@ -256,7 +275,7 @@
     };
 
     Planetfield.prototype.renderFarMeshes = function(camera, originOffset) {
-      var alpha, distSq, globalPos, i, lightVec, localPos, nearDistSq, nearTextureMap, seed, textureMap, visible, w, x, y, z, _i, _ref, _ref1, _ref2;
+      var alpha, colorIndex, distSq, globalPos, i, lightVec, localPos, nearDistSq, nearTextureMap, planetColor1, planetColor2, seed, textureMap, visible, w, x, y, z, _i, _ref, _ref1, _ref2, _ref3;
       if (!this.meshPlanets || this.meshPlanets.length === 0 || this.starList.length === 0) {
         return;
       }
@@ -284,7 +303,9 @@
           vec3.normalize(lightVec, lightVec);
           textureMap = this.farMapCache.getContent(seed);
           if (textureMap) {
-            this.farMesh.renderInstance(camera, globalPos, lightVec, alpha, textureMap);
+            colorIndex = seed % planetColors.length;
+            _ref3 = planetColors[colorIndex], planetColor1 = _ref3[0], planetColor2 = _ref3[1];
+            this.farMesh.renderInstance(camera, globalPos, lightVec, alpha, textureMap, planetColor1, planetColor2);
           }
         }
       }
@@ -292,7 +313,7 @@
     };
 
     Planetfield.prototype.renderNearMeshes = function(camera, originOffset) {
-      var alpha, dist, distSq, dummy, globalPos, i, lightVec, localPos, minNear, nearDistSq, seed, textureMap, w, x, y, z, _i, _len, _ref, _ref1, _ref2;
+      var alpha, colorIndex, dist, distSq, dummy, globalPos, i, lightVec, localPos, minNear, nearDistSq, planetColor1, planetColor2, seed, textureMap, w, x, y, z, _i, _len, _ref, _ref1, _ref2, _ref3;
       if (!this.meshPlanets || this.meshPlanets.length === 0 || this.starList.length === 0) {
         return;
       }
@@ -320,7 +341,9 @@
           seed = Math.floor(w * 1000000000);
           textureMap = this.nearMapCache.getContent(seed);
           if (textureMap) {
-            this.nearMesh.renderInstance(camera, globalPos, lightVec, alpha, textureMap);
+            colorIndex = seed % planetColors.length;
+            _ref3 = planetColors[colorIndex], planetColor1 = _ref3[0], planetColor2 = _ref3[1];
+            this.nearMesh.renderInstance(camera, globalPos, lightVec, alpha, textureMap, this.detailMapTex, planetColor1, planetColor2);
           }
           dummy = this.farMapCache.getContent(seed);
         }
