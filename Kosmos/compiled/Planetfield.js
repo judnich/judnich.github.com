@@ -19,6 +19,7 @@
       this.nearMeshRange = nearMeshRange;
       this.farMeshRange = farMeshRange;
       this.spriteRange = spriteRange;
+      this.spriteNearRange = nearMeshRange * 0.25;
       this.planetSize = planetSize;
       this.maxPlanetsPerSystem = maxPlanetsPerSystem;
       this.minOrbitScale = minOrbitScale;
@@ -355,7 +356,7 @@
         return;
       }
       camera.far = this.spriteRange * 1.1;
-      camera.near = this.farMeshRange * 0.9;
+      camera.near = this.spriteNearRange * 0.9;
       camera.update();
       this._startRenderSprites();
       gl.bufferData(gl.ARRAY_BUFFER, this.buff, gl.DYNAMIC_DRAW);
@@ -369,7 +370,7 @@
       mat4.mul(modelViewMat, camera.viewMat, modelViewMat);
       gl.uniformMatrix4fv(this.shader.uniforms.projMat, false, camera.projMat);
       gl.uniformMatrix4fv(this.shader.uniforms.modelViewMat, false, modelViewMat);
-      gl.uniform4f(this.shader.uniforms.spriteSizeAndViewRangeAndBlur, this.planetSize * 10.0, this.farMeshRange, this.spriteRange, blur);
+      gl.uniform4f(this.shader.uniforms.spriteSizeAndViewRangeAndBlur, this.planetSize * 10.0, this.spriteNearRange, this.spriteRange, blur);
       gl.drawElements(gl.TRIANGLES, this.numPlanets * 6, gl.UNSIGNED_SHORT, 0);
       return this._finishRenderSprites();
     };

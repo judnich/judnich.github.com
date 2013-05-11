@@ -11,7 +11,7 @@
       var buff, face, faceOffset, i, j, n, pixelSize, pos, u, v, v00, v01, v10, v11, _i, _j, _k, _l, _m, _n, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       this.geomRes = geomRes;
       this.shader = xgl.loadProgram("planetFarMesh");
-      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "lightVec", "sampler", "planetColor1", "planetColor2"]);
+      this.shader.uniforms = xgl.getProgramUniforms(this.shader, ["modelViewMat", "projMat", "lightVec", "sampler", "alpha", "planetColor1", "planetColor2"]);
       this.shader.attribs = xgl.getProgramAttribs(this.shader, ["aPos", "aUV"]);
       buff = new Float32Array(6 * (this.geomRes + 1) * (this.geomRes + 1) * 5);
       n = 0;

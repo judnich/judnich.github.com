@@ -86,13 +86,13 @@
     console.log("Initializing Kosmos Engine");
     root.canvas = $("#kosmosCanvas")[0];
     $(canvas).mousedown(function(e) { mouseDown(e.clientX, e.clientY); } );
-    document.addEventListener('touchstart', function(e) { mouseDown(e.pageX, e.pageY); } );
+    //document.addEventListener('touchstart', function(e) { mouseDown(e.pageX, e.pageY); } );
 
     $(canvas).mouseup(function(e) { mouseUp(e.clientX, e.clientY); } );
-    document.addEventListener('touchend', function(e) { mouseUp(e.pageX, e.pageY); } );
+    //document.addEventListener('touchend', function(e) { mouseUp(e.pageX, e.pageY); } );
 
     $(canvas).mousemove(function(e) { mouseMove(e.clientX, e.clientY); } );
-    document.addEventListener('touchmove', function(e) { mouseMove(e.pageX, e.pageY); } );
+    //document.addEventListener('touchmove', function(e) { mouseMove(e.pageX, e.pageY); } );
 
     kosmosResize();
     root.gl = WebGLUtils.setupWebGL(canvas, {
