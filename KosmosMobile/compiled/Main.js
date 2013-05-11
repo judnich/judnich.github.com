@@ -106,8 +106,8 @@
       return;
     }
     starfield = new Starfield({
-      blockMinStars: 100,
-      blockMaxStars: 150,
+      blockMinStars: 1000,
+      blockMaxStars: 2000,
       blockScale: 300000.0,
       starSize: 100.0,
       viewRange: 300000.0
