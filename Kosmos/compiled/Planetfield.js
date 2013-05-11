@@ -161,9 +161,7 @@
       this.renderNearMeshes(camera, originOffset);
       nearestPlanetDist = this.getDistanceToClosestPlanet();
       this._oldHurry = this.loadingHurryFactor;
-      if (nearestPlanetDist < 1.0) {
-        this.loadingHurryFactor = 8.0;
-      } else if (nearestPlanetDist < 2.5) {
+      if (nearestPlanetDist < 2.0) {
         this.loadingHurryFactor = 4.0;
       } else if (nearestPlanetDist < 5.0) {
         this.loadingHurryFactor = 2.0;
