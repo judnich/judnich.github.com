@@ -61,18 +61,17 @@
     }
   };
 
-  mouseDown = function(event) {
+  mouseDown = function(x, y) {
     mouseIsDown = true;
-    return mouseMove(event);
+    return mouseMove(x, y);
   };
 
-  mouseUp = function(event) {
+  mouseUp = function(x, y) {
     return mouseIsDown = false;
   };
 
-  mouseMove = function(event) {
-    var rightPanel, x, y, _ref;
-    _ref = [event.clientX, event.clientY], x = _ref[0], y = _ref[1];
+  mouseMove = function(x, y) {
+    var rightPanel, _ref;
     rightPanel = document.getElementById("rightbar");
     x = (x - rightPanel.offsetLeft - 1) / canvas.clientWidth;
     y = (y - rightPanel.offsetTop - 1) / canvas.clientHeight;
@@ -86,9 +85,15 @@
   root.kosmosMain = function() {
     console.log("Initializing Kosmos Engine");
     root.canvas = $("#kosmosCanvas")[0];
-    $(canvas).mousedown(mouseDown);
-    $(canvas).mouseup(mouseUp);
-    $(canvas).mousemove(mouseMove);
+    $(canvas).mousedown(function(e) { mouseDown(e.clientX, e.clientY); } );
+    document.addEventListener('touchstart', function(e) { mouseDown(e.pageX, e.pageY); } );
+
+    $(canvas).mouseup(function(e) { mouseUp(e.clientX, e.clientY); } );
+    document.addEventListener('touchend', function(e) { mouseUp(e.pageX, e.pageY); } );
+
+    $(canvas).mousemove(function(e) { mouseMove(e.clientX, e.clientY); } );
+    document.addEventListener('touchmove', function(e) { mouseMove(e.pageX, e.pageY); } );
+
     kosmosResize();
     root.gl = WebGLUtils.setupWebGL(canvas, {
       antialias: true,
@@ -138,9 +143,7 @@
       console.log("Note: Device pixel scaling (retina) is disabled.");
     }
     devicePixelRatio = enableRetina ? window.devicePixelRatio || 1 : 1;
-    if (devicePixelRatio < 2 && (canvas.clientWidth < 1440 || canvas.clientHeight < 900)) {
-      devicePixelRatio = 2;
-    }
+
     canvas.width = canvas.clientWidth * devicePixelRatio;
     canvas.height = canvas.clientHeight * devicePixelRatio;
     console.log("Main framebuffer resolution " + canvas.width + " x " + canvas.height, "with device pixel ratio " + devicePixelRatio);
