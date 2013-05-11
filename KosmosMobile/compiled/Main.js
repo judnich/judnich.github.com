@@ -106,15 +106,15 @@
       return;
     }
     starfield = new Starfield({
-      blockMinStars: 200,
-      blockMaxStars: 300,
+      blockMinStars: 20,
+      blockMaxStars: 30,
       blockScale: 100000.0,
       starSize: 50.0,
       viewRange: 300000.0
     });
     planetfield = new Planetfield({
       starfield: starfield,
-      maxPlanetsPerSystem: 3,
+      maxPlanetsPerSystem: 1,
       minOrbitScale: 15,
       maxOrbitScale: 30,
       planetSize: 1.0,
