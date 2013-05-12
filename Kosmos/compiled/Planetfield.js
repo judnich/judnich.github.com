@@ -7,12 +7,12 @@
 
   root.planetBufferSize = 100;
 
-  root.planetColors = [[[0.9, 0.7, 0.4], [0.6, 0.4, 0.2]], [[0.05, 0.0, 0.05], [0.5, 0.1, 0.5]], [[0.2, 0.6, 0.3], [0.4, 0.3, 0.1]], [[0.90, 0.95, 1.0], [0.5, 0.5, 0.5]], [[0.0, -50.0, -50.0], [0.0, 10.0, 10.0]], [[0.562, 0.225, 0.0], [0.375, 0.0, 0.0]]];
+  root.planetColors = [[[0.9, 0.7, 0.4], [0.6, 0.4, 0.2]], [[0.2, 0.05, 0.2], [0.7, 0.1, 0.7]], [[0.2, 0.6, 0.3], [0.4, 0.3, 0.1]], [[0.90, 0.95, 1.0], [0.5, 0.5, 0.5]], [[0.0, -50.0, -50.0], [0.0, 10.0, 10.0]], [[0.562, 0.225, 0.0], [0.375, 0.0, 0.0]]];
 
   root.Planetfield = (function() {
 
     function Planetfield(_arg) {
-      var angle, detailMapGen, farMeshRange, generateCallback, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearMeshRange, planetSize, randAngle, randomStream, spriteRange, starfield, u, v, vi, _i, _j, _ref;
+      var angle, farMeshRange, generateCallback, i, j, marker, maxOrbitScale, maxPlanetsPerSystem, minOrbitScale, nearMeshRange, planetSize, randAngle, randomStream, spriteRange, starfield, u, v, vi, _i, _j, _ref;
       starfield = _arg.starfield, maxPlanetsPerSystem = _arg.maxPlanetsPerSystem, minOrbitScale = _arg.minOrbitScale, maxOrbitScale = _arg.maxOrbitScale, planetSize = _arg.planetSize, nearMeshRange = _arg.nearMeshRange, farMeshRange = _arg.farMeshRange, spriteRange = _arg.spriteRange;
       this._starfield = starfield;
       this._planetBufferSize = root.planetBufferSize;
@@ -71,10 +71,8 @@
         };
       })(this);
       this.nearMapCache = new ContentCache(4, generateCallback);
-      console.log("Generating detail maps");
-      detailMapGen = new DetailMapGenerator(512);
-      this.detailMapTex = detailMapGen.generate();
-      console.log("Done generating detail maps");
+      this.detailMapTex = null;
+      this.detailMapTime = 5;
       this.progressiveLoadSteps = 128.0;
       this.loadingHurryFactor = 1.0;
     }
@@ -147,7 +145,7 @@
     };
 
     Planetfield.prototype.render = function(camera, originOffset, blur) {
-      var nearestPlanetDist;
+      var detailMapGen, nearestPlanetDist;
       this.starList = this._starfield.queryStars(camera.position, originOffset, this.spriteRange);
       this.starList.sort(function(_arg, _arg1) {
         var aw, ax, ay, az, cw, cx, cy, cz;
@@ -174,7 +172,17 @@
       this.farMapGen.finish();
       this.nearMapGen.start();
       this.nearMapCache.update(1);
-      return this.nearMapGen.finish();
+      this.nearMapGen.finish();
+      if (this.detailMapTex === null) {
+        if (this.detailMapTime <= 0) {
+          console.log("Generating detail maps");
+          detailMapGen = new DetailMapGenerator(512);
+          this.detailMapTex = detailMapGen.generate();
+          return console.log("Done generating detail maps");
+        } else {
+          return this.detailMapTime--;
+        }
+      }
     };
 
     Planetfield.prototype.getDistanceToClosestPlanet = function() {

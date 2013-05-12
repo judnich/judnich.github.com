@@ -7,6 +7,6 @@
 
   vert = "attribute vec2 aUV;\nvarying vec2 vUV;\n\nvoid main(void) {\n	vUV = aUV;\n	gl_Position = vec4(aUV * 2.0 - 1.0, 0.0, 1.0);\n}\n";
 
-  xgl.addProgram("detailMapGenerator", vert, xgl.commonNoiseShaderSource + frag);
+  xgl.addProgram("detailMapGenerator", vert, xgl.commonNoiseShaderSource2 + frag);
 
 }).call(this);

@@ -82,7 +82,7 @@
     FarMapGenerator.prototype.generate = function(seed) {
       var heightMap, rndStr, seeds, shaderIndex;
       rndStr = new RandomStream(seed);
-      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit(), rndStr.unit()];
+      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit()];
       shaderIndex = rndStr.intRange(0, kosmosShaderHeightFunctions.length - 1);
       console.log("Using planet category " + shaderIndex);
       gl.useProgram(this.shader[shaderIndex]);
@@ -90,7 +90,7 @@
       gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
       gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
       gl.vertexAttribPointer(this.shader[shaderIndex].attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
-      gl.uniform4fv(this.shader[shaderIndex].uniforms.randomSeed, seeds);
+      gl.uniform3fv(this.shader[shaderIndex].uniforms.randomSeed, seeds);
       heightMap = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, heightMap);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);

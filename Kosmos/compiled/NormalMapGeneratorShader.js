@@ -7,6 +7,6 @@
 
   vert = "attribute vec2 aUV;\nattribute vec3 aPos;\nattribute vec3 aTangent;\nattribute vec3 aBinormal;\nvarying vec3 vPos;\nvarying vec3 vTangent;\nvarying vec3 vBinormal;\nvarying vec2 vUV;\n\nuniform vec2 verticalViewport;\n\nvoid main(void) {\n        vUV = aUV;\n	vPos = aPos;\n        vTangent = aTangent;\n        vBinormal = aBinormal;\n\n        vec2 pos = aUV;\n        pos.y = (pos.y - verticalViewport.x) / verticalViewport.y;\n        pos = pos * 2.0 - 1.0;\n\n	gl_Position = vec4(pos, 0.0, 1.0);\n}\n";
 
-  xgl.addProgram("normalMapGenerator", vert, xgl.commonNoiseShaderSource + frag);
+  xgl.addProgram("normalMapGenerator", vert, frag);
 
 }).call(this);

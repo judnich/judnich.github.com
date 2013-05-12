@@ -128,7 +128,7 @@
     NearMapGenerator.prototype.generateSubMap = function(maps, seed, faceIndex, startFraction, endFraction) {
       var dataMap, indicesPerFace, rndStr, seeds, shaderIndex;
       rndStr = new RandomStream(seed);
-      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit(), rndStr.unit()];
+      seeds = [rndStr.unit(), rndStr.unit(), rndStr.unit()];
       shaderIndex = rndStr.intRange(0, kosmosShaderHeightFunctions.length - 1);
       gl.useProgram(this.heightGenShader[shaderIndex]);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVerts);
@@ -136,7 +136,7 @@
       gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aPos, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 2);
       gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aBinormal, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 5);
       gl.vertexAttribPointer(this.heightGenShader[shaderIndex].attribs.aTangent, 3, gl.FLOAT, false, this.quadVerts.itemSize * 4, 4 * 8);
-      gl.uniform4fv(this.heightGenShader[shaderIndex].uniforms.randomSeed, seeds);
+      gl.uniform3fv(this.heightGenShader[shaderIndex].uniforms.randomSeed, seeds);
       dataMap = maps[6];
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, dataMap, 0);
       gl.viewport(0, this.fbo.height * startFraction, this.fbo.width, this.fbo.height * (endFraction - startFraction));
