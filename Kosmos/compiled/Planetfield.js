@@ -7,7 +7,7 @@
 
   root.planetBufferSize = 100;
 
-  root.planetColors = [[[0.9, 0.7, 0.4], [0.6, 0.4, 0.2]], [[0.2, 0.05, 0.2], [0.7, 0.1, 0.7]], [[0.2, 0.6, 0.3], [0.4, 0.3, 0.1]], [[0.90, 0.95, 1.0], [0.5, 0.5, 0.5]], [[0.0, -50.0, -50.0], [0.0, 10.0, 10.0]], [[0.562, 0.225, 0.0], [0.375, 0.0, 0.0]]];
+  root.planetColors = [[[0.9, 0.7, 0.4], [0.6, 0.4, 0.2]], [[0.7, 0.4, 0.0], [0.5, 0.0, 0.0]], [[0.2, 0.6, 0.3], [0.4, 0.3, 0.1]], [[0.562, 0.225, 0.0], [0.375, 0.0, 0.0]], [[1.2, 1.2, 1.5], [0.4, 0.4, 0.7]], [[0.90, 0.95, 1.0], [0.5, 0.5, 0.5]], [[0.0, -50.0, -50.0], [0.0, 10.0, 10.0]], [[0.2, 0.05, 0.2], [0.7, 0.1, 0.7]]];
 
   root.Planetfield = (function() {
 
@@ -128,7 +128,7 @@
     };
 
     Planetfield.prototype.isLoadingComplete = function() {
-      return this.nearMapCache.isUpToDate() && this.farMapCache.isUpToDate();
+      return this.nearMapCache.isUpToDate() && this.farMapCache.isUpToDate() && this.detailMapTex !== null;
     };
 
     Planetfield.prototype.setPlanetSprite = function(index, position) {
