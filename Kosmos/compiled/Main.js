@@ -294,7 +294,7 @@
     var a, distToPlanet, look, mat, moveVec, planetVec, q, right, speedScale, up, x, y, z;
     updateTickElapsed();
     updateMouse();
-    speedScale = planetfield.getDistanceToClosestObject() * 0.01;
+    speedScale = (Math.max(planetfield.getDistanceToClosestObject(), 0.01) + 0.01) * 0.01;
     if (speedScale > 1000.0) {
       speedScale = 1000.0;
     }
@@ -306,9 +306,9 @@
     vec3.transformQuat(moveVec, moveVec, smoothRotation);
     vec3.add(camera.position, camera.position, moveVec);
     distToPlanet = planetfield.getDistanceToClosestPlanet();
-    if (distToPlanet < 0.1) {
-      planetVec = planetfield.getClosestPlanet();
-      a = Math.min((0.1 - distToPlanet) * 10, 1.0);
+    planetVec = planetfield.getClosestPlanet();
+    if (distToPlanet < 0.10) {
+      a = Math.min((0.10 - distToPlanet) * 10, 1.0);
       a = a * a;
       if (planetVec !== null) {
         x = planetVec[0], y = planetVec[1], z = planetVec[2];

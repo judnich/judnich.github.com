@@ -186,7 +186,7 @@
     };
 
     Planetfield.prototype.getDistanceToClosestPlanet = function() {
-      return Math.max(this.closestPlanetDist - 1.0, 0.01) || this._starfield.viewRange;
+      return Math.max(this.closestPlanetDist - 0.985, 0.0) || this._starfield.viewRange;
     };
 
     Planetfield.prototype.getDistanceToClosestStar = function() {
